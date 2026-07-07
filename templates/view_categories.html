@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Library Category Catalogue</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Library Category Catalogue</h1>
+
+
+    <p class="subtitle">
+        Browse and search all categories available in the library. This page provides readers with an organized view of the collection without modification privileges.
+    </p>
+
+    <!-- SEARCH -->
+
+    <div class="top-search">
+
+        <button
+            id="search-icon"
+            class="search-icon">
+
+            🔍
+
+        </button>
+
+    </div>
+
+    <div
+        id="search-box"
+        class="search-box">
+
+        <form
+            action="{{ url_for('view_categories') }}"
+            method="GET">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search categories..."
+                value="{{ request.args.get('search','') }}">
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+            <a
+                href="{{ url_for('view_categories') }}"
+                class="clear-btn">
+
+                Clear
+
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- CATEGORY TABLE -->
+
+    <table class="category-table">
+
+        <tr>
+
+            <th>Category ID</th>
+            <th>Category Name</th>
+
+        </tr>
+
+        {% if categories %}
+
+            {% for category in categories %}
+
+            <tr>
+
+                <td>{{ category[0] }}</td>
+
+                <td>{{ category[1] }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        {% else %}
+
+            <tr>
+
+                <td colspan="2">
+
+                    No Categories Found
+
+                </td>
+
+            </tr>
+
+        {% endif %}
+
+    </table>
+
+    <!-- NAVIGATION -->
+
+    <div class="navigation-buttons">
+
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="nav-btn">
+
+            Dashboard
+
+        </a>
+
+        <a
+            href="{{ url_for('books') }}"
+            class="nav-btn">
+
+            View Books
+
+        </a>
+
+    </div>
+    <p style="text-align:center;color:gray;font-size:14px;">
+        Library Management System • Reader Portal
+    </p>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>

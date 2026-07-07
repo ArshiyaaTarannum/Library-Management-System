@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Library Management System</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+<h1>
+ Library Management System
+</h1>
+
+
+<p class="hero-subtitle">
+Digital Library Administration Portal
+</p>
+
+
+<p class="hero-quote">
+"Knowledge grows when it is shared."
+</p>
+
+
+</section>
+
+
+
+
+
+<!-- LIBRARIAN SECTION -->
+
+
+<div class="section-title">
+
+<span class="section-line"></span>
+
+<h2>
+Librarian Portal
+</h2>
+
+<span class="section-line"></span>
+
+
+</div>
+
+
+<p class="portal-subtitle">
+
+Manage books, categories and maintain the library collection.
+
+</p>
+
+
+
+
+<div class="dashboard">
+
+
+<div class="dashboard-card">
+
+
+<h2>
+📚 Book Management
+</h2>
+
+
+<p>
+
+Add new books, update existing records,
+search books and manage the complete collection.
+
+</p>
+
+
+<a 
+href="{{ url_for('add_books') }}"
+class="nav-btn">
+
+Open Book Management
+
+</a>
+
+
+</div>
+
+
+
+
+
+<div class="dashboard-card">
+
+
+<h2>
+📂 Category Management
+</h2>
+
+
+<p>
+
+Create, edit, delete and organize
+book categories in the library.
+
+</p>
+
+
+<a 
+href="{{ url_for('category') }}"
+class="nav-btn">
+
+Open Category Management
+
+</a>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- READER SECTION -->
+
+
+<div class="section-title">
+
+
+<span class="section-line"></span>
+
+
+<h2>
+Reader Portal
+</h2>
+
+
+<span class="section-line"></span>
+
+
+</div>
+
+
+
+<p class="portal-subtitle">
+
+Browse available books and categories.
+
+</p>
+
+
+
+
+
+<div class="dashboard">
+
+
+
+<div class="dashboard-card">
+
+
+<h2>
+🔎 Browse Books
+</h2>
+
+
+<p>
+
+Search and view books available
+in the library catalogue.
+
+</p>
+
+
+
+<a 
+href="{{ url_for('books') }}"
+class="nav-btn">
+
+View Books
+
+</a>
+
+
+</div>
+
+
+
+
+
+<div class="dashboard-card">
+
+
+<h2>
+📖 Browse Categories
+</h2>
+
+
+<p>
+
+Explore different book categories
+available in the library.
+
+</p>
+
+
+
+<a 
+href="{{ url_for('view_categories') }}"
+class="nav-btn">
+
+View Categories
+
+</a>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<hr class="dashboard-divider">
+
+
+
+
+
+
+<!-- SYSTEM INFO -->
+
+
+<div class="system-info">
+
+
+<h2>
+System Information
+</h2>
+
+
+
+<table class="info-table">
+
+
+<tr>
+
+<td>
+Application
+</td>
+
+<td>
+Library Management System
+</td>
+
+</tr>
+
+
+
+<tr>
+
+<td>
+Framework
+</td>
+
+<td>
+Flask
+</td>
+
+</tr>
+
+
+
+<tr>
+
+<td>
+Database
+</td>
+
+<td>
+MySQL
+</td>
+
+</tr>
+
+
+
+<tr>
+
+<td>
+Frontend
+</td>
+
+<td>
+HTML • CSS • JavaScript
+</td>
+
+</tr>
+
+
+
+</table>
+
+
+</div>
+
+<!-- PROJECT INTRODUCTION -->
+
+<section class="project-section">
+
+
+<div class="vision-quote">
+
+
+<h2>
+"Every book holds a story, and every system creates a pathway to discover it."
+</h2>
+
+
+<p>
+A digital approach towards organizing knowledge,
+managing resources and improving the library experience.
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="project-boxes">
+
+
+<div class="project-card">
+
+
+<h2>
+ Completed Work
+</h2>
+
+
+<ul>
+
+<li>Book Management System</li>
+
+<li>Category Management System</li>
+
+<li>Add, Update and Delete Operations</li>
+
+<li>Search functionality for books and categories</li>
+
+<li>Automatic ID generation</li>
+
+<li>Flask backend integration</li>
+
+<li>MySQL database connectivity</li>
+
+<li>Reader view with read-only access</li>
+
+
+</ul>
+
+
+</div>
+
+
+
+
+
+<div class="project-card">
+
+
+<h2>
+ Future Enhancements
+</h2>
+
+
+<ul>
+
+<li>User Authentication and Login System</li>
+
+<li>Student / Member Management</li>
+
+<li>Book Issue and Return System</li>
+
+<li>Due Date Tracking</li>
+
+<li>Fine Calculation Management</li>
+
+<li>Book Availability Status</li>
+
+<li>Dashboard Analytics</li>
+
+<li>Email Notifications and Reminders</li>
+
+
+</ul>
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+<!-- FOOTER -->
+
+
+<section class="closing-section">
+
+
+<div class="signature">
+
+
+<p>
+Designed & Developed by
+</p>
+
+
+<h2>
+Arshiya Tarannum
+</h2>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+</body>
+
+</html>

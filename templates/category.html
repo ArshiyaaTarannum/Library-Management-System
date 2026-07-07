@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Library Category Management</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Library Category Management</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+        {% for message in messages %}
+
+        <div class="flash-message">
+
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+    
+    <p class="subtitle">
+
+        Add, search, update and organize book categories for the library catalogue.
+        Double-click any row to modify an existing category.
+
+    </p>
+
+    <!-- SEARCH -->
+
+    <div class="top-search">
+
+        <button
+            id="search-icon"
+            class="search-icon">
+
+            🔍
+
+        </button>
+
+    </div>
+
+    <div
+        id="search-box"
+        class="search-box">
+
+        <form
+            action="{{ url_for('category') }}"
+            method="GET">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search Category..."
+                value="{{ request.args.get('search','') }}">
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+            <a
+                href="{{ url_for('category') }}"
+                class="clear-btn">
+
+                Clear
+
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- CATEGORY FORM -->
+
+    <div class="container">
+
+        <form
+            id="category-form"
+            action="{{ url_for('add_category') }}"
+            method="POST"
+            autocomplete="off">
+
+            <input
+                type="hidden"
+                name="category_id"
+                id="category_id">
+
+            <label>Category ID</label>
+
+            <input
+                type="text"
+                id="display_category_id"
+                value="{{ next_category_id }}"
+                readonly>
+
+            <label>Category Name</label>
+
+            <input
+                type="text"
+                name="category_name"
+                id="category_name"
+                placeholder="Enter Category Name"
+                required>
+
+            <button
+                type="submit"
+                id="save-category">
+
+                Save Category
+
+            </button>
+
+            <button
+                type="reset"
+                onclick="resetCategoryForm()">
+
+                Clear
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- CATEGORY TABLE -->
+
+    <table class="category-table">
+
+        <tr>
+
+            <th>Category ID</th>
+            <th>Category Name</th>
+            <th>Edit</th>
+            <th>Delete</th>
+
+        </tr>
+
+        {% if categories %}
+
+        {% for category in categories %}
+
+        <tr>
+
+            <td>{{ category[0] }}</td>
+
+            <td>{{ category[1] }}</td>
+
+            <td>
+
+                <button
+                    type="button"
+                    class="edit-btn"
+                    onclick="loadCategory(
+                        '{{ category[0] }}',
+                        '{{ category[1] }}'
+                    )">
+
+                    Edit
+
+                </button>
+
+            </td>
+
+            <td>
+
+                <a
+                    href="{{ url_for('delete_category', category_id=category[0]) }}"
+                    class="delete-btn"
+                    onclick="return confirm('Delete this category?')">
+
+                    Delete
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        {% else %}
+
+        <tr>
+
+            <td colspan="4">
+
+                No categories found.
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+    <!-- NAVIGATION -->
+
+    <div class="navigation-buttons">
+
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="nav-btn">
+
+            Dashboard
+
+        </a>
+
+        <a
+            href="{{ url_for('add_books') }}"
+            class="nav-btn">
+
+            Book Management
+
+        </a>
+
+        <a
+            href="{{ url_for('books') }}"
+            class="nav-btn">
+
+            Reader Books
+
+        </a>
+
+        <a
+            href="{{ url_for('view_categories') }}"
+            class="nav-btn">
+
+            Reader Categories
+
+        </a>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>
