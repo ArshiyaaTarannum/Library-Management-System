@@ -1034,3 +1034,41 @@ hr{
     }
 
 }
+.category-table tbody tr,
+.book-table tbody tr {
+    cursor: pointer;
+}
+
+.category-table tbody tr:hover,
+.book-table tbody tr:hover {
+    background: #eef9f4;
+}
+
+.category-table tbody tr,
+.book-table tbody tr {
+    cursor: pointer;
+    transition: background-color .2s ease;
+}
+
+.category-table tbody tr:hover,
+.book-table tbody tr:hover {
+    background: #eef9f4;
+}
+
+.stats-bar {
+    width: 95%;
+    max-width: 1100px;
+    margin: 10px auto 25px auto;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.stats-card {
+    background: #198754;
+    color: white;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+}
