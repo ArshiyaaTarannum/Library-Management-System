@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
+from datetime import date
 import mysql.connector
 
 app = Flask(__name__)
@@ -202,13 +203,15 @@ def update_book():
     category_id = request.form["category_id"]
     publication = request.form["publication"].strip().title()
     publication_date = request.form["publication_date"]
+    entry_date = request.form["entry_date"]
 
     if (
         not book_name or
         not author or
         not category_id or
         not publication or
-        not publication_date
+        not publication_date or
+        not entry_date
     ):
 
         flash("Please fill all fields.")
@@ -222,6 +225,7 @@ def update_book():
             CategoryID=%s,
             Publication=%s,
             PublicationDate=%s
+            EntryDate=%s
         WHERE BookID=%s
     """, (
         book_name,
@@ -229,6 +233,7 @@ def update_book():
         category_id,
         publication,
         publication_date,
+        entry_date,
         book_id
     ))
 
@@ -238,14 +243,12 @@ def update_book():
 
     return redirect(url_for("add_books"))
 
-
 @app.route("/add_books")
 def add_books():
 
     search = request.args.get("search", "").strip()
     search_by = request.args.get("search_by", "")
 
-    # Fetch Categories
     cur.execute("""
         SELECT CategoryID, CategoryName
         FROM Category
@@ -253,7 +256,6 @@ def add_books():
     """)
     categories = cur.fetchall()
 
-    # Generate Next Book ID
     cur.execute("""
         SELECT BookID
         FROM Book
@@ -269,7 +271,6 @@ def add_books():
         number = int(last_book[0][3:]) + 1
         next_book_id = f"LIB{number:04d}"
 
-    # Books Query
     query = """
         SELECT
             Book.BookID,
@@ -278,7 +279,8 @@ def add_books():
             Category.CategoryName,
             Book.CategoryID,
             Book.Publication,
-            Book.PublicationDate
+            Book.PublicationDate,
+            Book.EntryDate
         FROM Book
         JOIN Category
         ON Book.CategoryID = Category.CategoryID
@@ -309,13 +311,17 @@ def add_books():
     query += " ORDER BY Book.BookID"
 
     cur.execute(query, values)
+
     books = cur.fetchall()
+    total_books = len(books)
 
     return render_template(
         "add_books.html",
         categories=categories,
         next_book_id=next_book_id,
-        books=books
+        books=books,
+        today=date.today().isoformat(),
+        total_books=total_books
     )
 
 @app.route("/books")
@@ -331,7 +337,8 @@ def books():
             Book.Author,
             Category.CategoryName,
             Book.Publication,
-            Book.PublicationDate
+            Book.PublicationDate,
+            Book.EntryDate
         FROM Book
         JOIN Category
         ON Book.CategoryID = Category.CategoryID
@@ -378,13 +385,15 @@ def add_book():
     category_id = request.form["category_id"]
     publication = request.form["publication"].strip().title()
     publication_date = request.form["publication_date"]
+    entry_date = request.form["entry_date"]
 
     if (
         not book_name or
         not author or
         not category_id or
         not publication or
-        not publication_date
+        not publication_date or
+        not entry_date
     ):
         flash("Please fill all fields.")
         return redirect(url_for("add_books"))
@@ -408,23 +417,42 @@ def add_book():
 
         cur.execute("""
             INSERT INTO Book
-            (BookID, BookName, Author, CategoryID, Publication, PublicationDate)
-            VALUES(%s,%s,%s,%s,%s,%s)
+            (
+                BookID,
+                BookName,
+                Author,
+                CategoryID,
+                Publication,
+                PublicationDate,
+                EntryDate
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
         """, (
             book_id,
             book_name,
             author,
             category_id,
             publication,
-            publication_date
+            publication_date,
+            entry_date
         ))
 
         conn.commit()
 
         flash("Book Added Successfully!")
 
-    except mysql.connector.Error:
+    except mysql.connector.Error as e:
 
+        print(e)
         flash("Unable to add book.")
 
     return redirect(url_for("add_books"))
