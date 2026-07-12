@@ -4,13 +4,11 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Library Category Management</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
@@ -21,19 +19,19 @@
     {% with messages = get_flashed_messages() %}
     {% if messages %}
 
-        {% for message in messages %}
+    {% for message in messages %}
 
-        <div class="flash-message">
+    <div class="flash-message">
 
-            {{ message }}
+        {{ message }}
 
-        </div>
+    </div>
 
-        {% endfor %}
+    {% endfor %}
 
     {% endif %}
     {% endwith %}
-    
+
     <p class="subtitle">
 
         Add, search, update and organize book categories for the library catalogue.
@@ -45,9 +43,7 @@
 
     <div class="top-search">
 
-        <button
-            id="search-icon"
-            class="search-icon">
+        <button id="search-icon" class="search-icon">
 
             🔍
 
@@ -55,18 +51,11 @@
 
     </div>
 
-    <div
-        id="search-box"
-        class="search-box">
+    <div id="search-box" class="search-box">
 
-        <form
-            action="{{ url_for('category') }}"
-            method="GET">
+        <form action="{{ url_for('category') }}" method="GET">
 
-            <input
-                type="text"
-                name="search"
-                placeholder="Search Category..."
+            <input type="text" name="search" placeholder="Search Category..."
                 value="{{ request.args.get('search','') }}">
 
             <button type="submit">
@@ -75,9 +64,7 @@
 
             </button>
 
-            <a
-                href="{{ url_for('category') }}"
-                class="clear-btn">
+            <a href="{{ url_for('category') }}" class="clear-btn">
 
                 Clear
 
@@ -91,45 +78,25 @@
 
     <div class="container">
 
-        <form
-            id="category-form"
-            action="{{ url_for('add_category') }}"
-            method="POST"
-            autocomplete="off">
+        <form id="category-form" action="{{ url_for('add_category') }}" method="POST" autocomplete="off">
 
-            <input
-                type="hidden"
-                name="category_id"
-                id="category_id">
+            <input type="hidden" name="category_id" id="category_id">
 
             <label>Category ID</label>
 
-            <input
-                type="text"
-                id="display_category_id"
-                value="{{ next_category_id }}"
-                readonly>
+            <input type="text" id="display_category_id" value="{{ next_category_id }}" readonly>
 
             <label>Category Name</label>
 
-            <input
-                type="text"
-                name="category_name"
-                id="category_name"
-                placeholder="Enter Category Name"
-                required>
+            <input type="text" name="category_name" id="category_name" placeholder="Enter Category Name" required>
 
-            <button
-                type="submit"
-                id="save-category">
+            <button type="submit" id="save-category">
 
                 Save Category
 
             </button>
 
-            <button
-                type="reset"
-                onclick="resetCategoryForm()">
+            <button type="reset" onclick="resetCategoryForm()">
 
                 Clear
 
@@ -156,18 +123,17 @@
 
         {% for category in categories %}
 
-        <tr>
+        <tr ondblclick="loadCategory(
+                                                    '{{ category[0] }}',
+                                                    '{{ category[1] }}'
+                                                )">
 
             <td>{{ category[0] }}</td>
 
             <td>{{ category[1] }}</td>
-
             <td>
 
-                <button
-                    type="button"
-                    class="edit-btn"
-                    onclick="loadCategory(
+                <button type="button" class="edit-btn" onclick="loadCategory(
                         '{{ category[0] }}',
                         '{{ category[1] }}'
                     )">
@@ -180,9 +146,7 @@
 
             <td>
 
-                <a
-                    href="{{ url_for('delete_category', category_id=category[0]) }}"
-                    class="delete-btn"
+                <a href="{{ url_for('delete_category', category_id=category[0]) }}" class="delete-btn"
                     onclick="return confirm('Delete this category?')">
 
                     Delete
@@ -215,33 +179,25 @@
 
     <div class="navigation-buttons">
 
-        <a
-            href="{{ url_for('dashboard') }}"
-            class="nav-btn">
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
 
             Dashboard
 
         </a>
 
-        <a
-            href="{{ url_for('add_books') }}"
-            class="nav-btn">
+        <a href="{{ url_for('add_books') }}" class="nav-btn">
 
             Book Management
 
         </a>
 
-        <a
-            href="{{ url_for('books') }}"
-            class="nav-btn">
+        <a href="{{ url_for('books') }}" class="nav-btn">
 
             Reader Books
 
         </a>
 
-        <a
-            href="{{ url_for('view_categories') }}"
-            class="nav-btn">
+        <a href="{{ url_for('view_categories') }}" class="nav-btn">
 
             Reader Categories
 
