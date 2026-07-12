@@ -27,23 +27,24 @@ function loadBook(
     id,
     name,
     author,
-    category,
+    categoryId,
     publication,
-    date
+    publicationDate,
+    entryDate
 ){
 
     document.getElementById("book_id").value = id;
     document.getElementById("display_book_id").value = id;
+
     document.getElementById("book_name").value = name;
     document.getElementById("author").value = author;
-    document.getElementById("category_id").value = category;
+    document.getElementById("category_id").value = categoryId;
     document.getElementById("publication").value = publication;
-    document.getElementById("publication_date").value = date;
+    document.getElementById("publication_date").value = publicationDate;
+    document.getElementById("entry_date").value = entryDate;
 
     document.getElementById("book-form").action = "/update_book";
-
     document.getElementById("save-btn").innerHTML = "Update Book";
-
 }
 
 function resetBookForm(){
@@ -56,8 +57,11 @@ function resetBookForm(){
 
     document.getElementById("book_id").value = "";
 
-}
+    document.getElementById("display_book_id").value = "";
 
+    document.getElementById("entry_date").value = new Date().toISOString().split("T")[0];
+
+}
 function loadCategory(id, name){
 
     document.getElementById("category_id").value = id;
@@ -81,3 +85,25 @@ function resetCategoryForm(){
     document.getElementById("category_id").value = "";
 
 }
+document.addEventListener("keydown", function (e) {
+
+    if (e.key !== "Enter") return;
+
+    const bookForm = document.getElementById("book-form");
+    const categoryForm = document.getElementById("category-form");
+
+    if (bookForm) {
+
+        e.preventDefault();
+        bookForm.requestSubmit();
+
+    }
+
+    else if (categoryForm) {
+
+        e.preventDefault();
+        categoryForm.requestSubmit();
+
+    }
+
+});
