@@ -140,7 +140,13 @@
 
             <label>Status</label>
 
-            <input type="text" name="status" id="status" value="Issued" readonly>
+            <select name="status" id="status" required>
+            
+                <option value="Issued">Issued</option>
+            
+                <option value="Returned">Returned</option>
+            
+            </select>
 
             <button id="save-borrow" type="submit">
 
@@ -327,14 +333,14 @@
 
         </a>
         <a href="{{ url_for('view_categories') }}" class="nav-btn">
-        
+
             Reader Categories
-        
+
         </a>
         <a href="{{ url_for('books') }}" class="nav-btn">
-        
+
             Reader Books
-        
+
         </a>
 
         <a href="{{ url_for('books') }}" class="nav-btn">
