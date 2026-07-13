@@ -588,11 +588,6 @@ def borrow_books():
         today=today
     )
 
-
-print("Host:", os.getenv("DB_HOST"))
-print("User:", os.getenv("DB_USER"))
-print("Password:", os.getenv("DB_PASSWORD"))
-print("Database:", os.getenv("DB_NAME"))
 # ---------------- RUN FLASK ----------------
 
 
