@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 from datetime import date
 import mysql.connector
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
@@ -8,10 +11,10 @@ app.secret_key = "library_management_secret"
 # DATABASE CONNECTION 
 
 conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="@",
-    database="library"
+    host=os.getenv("localhost"),
+    user=os.getenv("root"),
+    password=os.getenv("@rasulpur489"),
+    database=os.getenv("library")
 )
 
 cur = conn.cursor()
