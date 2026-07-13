@@ -62,6 +62,45 @@ function resetBookForm(){
     document.getElementById("entry_date").value = new Date().toISOString().split("T")[0];
 
 }
+
+function loadBorrow(
+    issueId,
+    bookId,
+    studentName,
+    studentId,
+    issueDate,
+    dueDate,
+    returnDate,
+    entryDate,
+    status
+) {
+
+    document.getElementById("issue_id").value = issueId;
+
+    document.getElementById("display_issue_id").value = issueId;
+
+    document.getElementById("book_id").value = bookId;
+
+    document.getElementById("student_name").value = studentName;
+
+    document.getElementById("student_id").value = studentId;
+
+    document.getElementById("issue_date").value = issueDate;
+
+    document.getElementById("due_date").value = dueDate;
+
+    document.getElementById("return_date").value = returnDate;
+
+    document.getElementById("entry_date").value = entryDate;
+
+    document.getElementById("status").value = status;
+
+    document.getElementById("borrow-form").action = "/update_borrow";
+
+    document.getElementById("save-borrow").innerHTML = "Update Record";
+
+}
+
 function loadCategory(id, name){
 
     document.getElementById("category_id").value = id;
@@ -83,6 +122,17 @@ function resetCategoryForm(){
     document.getElementById("save-category").innerHTML = "Save Category";
 
     document.getElementById("category_id").value = "";
+
+}
+function resetBorrowForm() {
+
+    document.getElementById("borrow-form").reset();
+
+    document.getElementById("borrow-form").action = "/borrow_book";
+
+    document.getElementById("save-borrow").innerHTML = "Issue Book";
+
+    document.getElementById("issue_id").value = "";
 
 }
 document.addEventListener("keydown", function (e) {
@@ -107,3 +157,4 @@ document.addEventListener("keydown", function (e) {
     }
 
 });
+
