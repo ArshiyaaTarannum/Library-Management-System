@@ -5,25 +5,25 @@ import mysql.connector
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 
-# ---------------- DATABASE CONNECTION ----------------
+# DATABASE CONNECTION 
 
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="@rasulpur489",
+    password="@",
     database="library"
 )
 
 cur = conn.cursor()
 
-# ---------------- DASHBOARD PAGE ----------------
+# DASHBOARD PAGE 
 
 
 @app.route("/")
 def dashboard():
     return render_template("index.html")
 
-# ---------------- CATEGORY PAGE ----------------
+# CATEGORY PAGE 
 
 @app.route("/category")
 def category():
@@ -78,7 +78,7 @@ def category():
     )
 
 
-# ---------------- ADD CATEGORY ----------------
+# ADD CATEGORY
 
 @app.route("/add_category", methods=["POST"])
 def add_category():
@@ -124,7 +124,7 @@ def add_category():
     return redirect(url_for("category"))
 
 
-# ---------------- DELETE CATEGORY ----------------
+# DELETE CATEGORY 
 
 @app.route("/delete_category/<category_id>")
 def delete_category(category_id):
@@ -146,7 +146,7 @@ def delete_category(category_id):
 
     return redirect(url_for("category"))
 
-# ---------------- DELETE BOOK ----------------
+#- DELETE BOOK 
 
 
 @app.route("/delete_book/<book_id>")
