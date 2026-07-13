@@ -11,10 +11,10 @@ app.secret_key = "library_management_secret"
 # DATABASE CONNECTION 
 
 conn = mysql.connector.connect(
-    host=os.getenv("localhost"),
-    user=os.getenv("root"),
-    password=os.getenv("@rasulpur489"),
-    database=os.getenv("library")
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    database=os.getenv("DB_NAME")
 )
 
 cur = conn.cursor()
@@ -588,6 +588,11 @@ def borrow_books():
         today=today
     )
 
+
+print("Host:", os.getenv("DB_HOST"))
+print("User:", os.getenv("DB_USER"))
+print("Password:", os.getenv("DB_PASSWORD"))
+print("Database:", os.getenv("DB_NAME"))
 # ---------------- RUN FLASK ----------------
 
 
