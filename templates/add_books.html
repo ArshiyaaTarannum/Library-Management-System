@@ -35,13 +35,13 @@
         Add, search, update and manage books. Only for Librarians.
     </p>
     <div class="stats-bar">
-    
+
         <div class="stats-card">
-    
+
             Total Books : <strong>{{ total_books }}</strong>
-    
+
         </div>
-    
+
     </div>
 
     <!-- SEARCH -->
@@ -96,7 +96,7 @@
         <form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
 
             <label>Date of Entry</label>
-            
+
             <input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
 
             <input type="hidden" name="book_id" id="book_id">
@@ -298,6 +298,11 @@
 
             Category Management
 
+        </a>
+        <a href="{{ url_for('borrow_books') }}" class="nav-btn">
+        
+            Borrow Management
+        
         </a>
 
         <a href="{{ url_for('books') }}" class="nav-btn">
