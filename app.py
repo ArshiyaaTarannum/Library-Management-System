@@ -588,6 +588,120 @@ def borrow_books():
         today=today
     )
 
+
+@app.route("/borrow_book", methods=["POST"])
+def borrow_book():
+
+    issue_id = request.form["issue_id"]
+    book_id = request.form["book_id"]
+    student_name = request.form["student_name"].strip().title()
+    student_id = request.form["student_id"].strip().upper()
+    issue_date = request.form["issue_date"]
+    due_date = request.form["due_date"]
+    return_date = request.form["return_date"] or None
+    entry_date = request.form["entry_date"]
+    status = request.form["status"]
+
+    try:
+
+        cur.execute("""
+            INSERT INTO BorrowBook(
+                IssueID,
+                BookID,
+                StudentName,
+                StudentID,
+                IssueDate,
+                DueDate,
+                ReturnDate,
+                EntryDate,
+                Status
+            )
+            VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            issue_id,
+            book_id,
+            student_name,
+            student_id,
+            issue_date,
+            due_date,
+            return_date,
+            entry_date,
+            status
+        ))
+
+        cur.execute("""
+            UPDATE Book
+            SET Status='Issued'
+            WHERE BookID=%s
+        """, (book_id,))
+
+        conn.commit()
+
+        flash("Book Issued Successfully!")
+
+    except mysql.connector.Error:
+
+        flash("Unable to issue book.")
+
+    return redirect(url_for("borrow_books"))
+
+
+@app.route("/delete_borrow/<issue_id>")
+def delete_borrow(issue_id):
+
+    cur.execute("""
+        SELECT BookID
+        FROM BorrowBook
+        WHERE IssueID=%s
+    """, (issue_id,))
+
+    book = cur.fetchone()
+
+    if book:
+
+        cur.execute("""
+            UPDATE Book
+            SET Status='Available'
+            WHERE BookID=%s
+        """, (book[0],))
+
+        cur.execute("""
+            DELETE FROM BorrowBook
+            WHERE IssueID=%s
+        """, (issue_id,))
+
+        conn.commit()
+
+        flash("Borrow Record Deleted Successfully!")
+
+    return redirect(url_for("borrow_books"))
+
+
+@app.route("/borrow_history")
+def borrow_history():
+
+    cur.execute("""
+        SELECT
+            BorrowBook.IssueID,
+            Book.BookName,
+            BorrowBook.StudentName,
+            BorrowBook.StudentID,
+            BorrowBook.IssueDate,
+            BorrowBook.DueDate,
+            BorrowBook.ReturnDate,
+            BorrowBook.Status
+        FROM BorrowBook
+        JOIN Book
+        ON BorrowBook.BookID = Book.BookID
+        ORDER BY BorrowBook.IssueDate DESC
+    """)
+
+    records = cur.fetchall()
+
+    return render_template(
+        "borrow_history.html",
+        records=records
+    )
 # ---------------- RUN FLASK ----------------
 
 
