@@ -493,6 +493,98 @@ def view_categories():
         categories=categories
     )
 
+
+@app.route("/borrow_books")
+def borrow_books():
+
+    search = request.args.get("search", "").strip()
+    search_by = request.args.get("search_by", "")
+
+    # ---------------- Available Books ----------------
+
+    cur.execute("""
+        SELECT BookID, BookName
+        FROM Book
+        WHERE Status='Available'
+        ORDER BY BookName
+    """)
+
+    books = cur.fetchall()
+
+    # ---------------- Generate Next Issue ID ----------------
+
+    cur.execute("""
+        SELECT IssueID
+        FROM BorrowBook
+        ORDER BY IssueID DESC
+        LIMIT 1
+    """)
+
+    last_issue = cur.fetchone()
+
+    if last_issue is None:
+        next_issue_id = "ISS001"
+    else:
+        number = int(last_issue[0][3:]) + 1
+        next_issue_id = f"ISS{number:03d}"
+
+    # ---------------- Borrow Records ----------------
+
+    query = """
+        SELECT
+            BorrowBook.IssueID,
+            BorrowBook.BookID,
+            Book.BookName,
+            BorrowBook.StudentName,
+            BorrowBook.StudentID,
+            BorrowBook.IssueDate,
+            BorrowBook.DueDate,
+            BorrowBook.ReturnDate,
+            BorrowBook.EntryDate,
+            BorrowBook.Status
+        FROM BorrowBook
+        JOIN Book
+        ON BorrowBook.BookID = Book.BookID
+        WHERE 1=1
+    """
+
+    values = []
+
+    if search:
+
+        if search_by == "issue_id":
+            query += " AND BorrowBook.IssueID LIKE %s"
+
+        elif search_by == "student_name":
+            query += " AND BorrowBook.StudentName LIKE %s"
+
+        elif search_by == "student_id":
+            query += " AND BorrowBook.StudentID LIKE %s"
+
+        elif search_by == "book":
+            query += " AND Book.BookName LIKE %s"
+
+        else:
+            query += " AND BorrowBook.Status LIKE %s"
+
+        values.append("%" + search + "%")
+
+    query += " ORDER BY BorrowBook.IssueDate DESC"
+
+    cur.execute(query, values)
+
+    borrow_records = cur.fetchall()
+
+    today = date.today().isoformat()
+
+    return render_template(
+        "borrow_books.html",
+        books=books,
+        borrow_records=borrow_records,
+        next_issue_id=next_issue_id,
+        today=today
+    )
+
 # ---------------- RUN FLASK ----------------
 
 
