@@ -1,3 +1,5 @@
+// ================= SEARCH =================
+
 const searchIcon = document.getElementById("search-icon");
 const searchBox = document.getElementById("search-box");
 
@@ -9,7 +11,22 @@ if (searchIcon && searchBox) {
 
     });
 
+    document.addEventListener("click", function (e) {
+
+        if (
+            !searchBox.contains(e.target) &&
+            !searchIcon.contains(e.target)
+        ) {
+
+            searchBox.classList.remove("show");
+
+        }
+
+    });
+
 }
+
+// ================= FLASH MESSAGE =================
 
 setTimeout(function () {
 
@@ -23,6 +40,8 @@ setTimeout(function () {
 
 }, 3000);
 
+// ================= BOOK =================
+
 function loadBook(
     id,
     name,
@@ -31,7 +50,7 @@ function loadBook(
     publication,
     publicationDate,
     entryDate
-){
+) {
 
     document.getElementById("book_id").value = id;
     document.getElementById("display_book_id").value = id;
@@ -44,10 +63,12 @@ function loadBook(
     document.getElementById("entry_date").value = entryDate;
 
     document.getElementById("book-form").action = "/update_book";
+
     document.getElementById("save-btn").innerHTML = "Update Book";
+
 }
 
-function resetBookForm(){
+function resetBookForm() {
 
     document.getElementById("book-form").reset();
 
@@ -57,11 +78,38 @@ function resetBookForm(){
 
     document.getElementById("book_id").value = "";
 
-    document.getElementById("display_book_id").value = "";
-
-    document.getElementById("entry_date").value = new Date().toISOString().split("T")[0];
+    document.getElementById("entry_date").value =
+        new Date().toISOString().split("T")[0];
 
 }
+
+// ================= CATEGORY =================
+
+function loadCategory(id, name) {
+
+    document.getElementById("category_id").value = id;
+
+    document.getElementById("category_name").value = name;
+
+    document.getElementById("category-form").action = "/update_category";
+
+    document.getElementById("save-category").innerHTML = "Update Category";
+
+}
+
+function resetCategoryForm() {
+
+    document.getElementById("category-form").reset();
+
+    document.getElementById("category-form").action = "/add_category";
+
+    document.getElementById("save-category").innerHTML = "Save Category";
+
+    document.getElementById("category_id").value = "";
+
+}
+
+// ================= BORROW =================
 
 function loadBorrow(
     issueId,
@@ -89,7 +137,7 @@ function loadBorrow(
 
     document.getElementById("due_date").value = dueDate;
 
-    document.getElementById("return_date").value = returnDate;
+    document.getElementById("return_date").value = returnDate || "";
 
     document.getElementById("entry_date").value = entryDate;
 
@@ -101,29 +149,6 @@ function loadBorrow(
 
 }
 
-function loadCategory(id, name){
-
-    document.getElementById("category_id").value = id;
-
-    document.getElementById("category_name").value = name;
-
-    document.getElementById("category-form").action = "/update_category";
-
-    document.getElementById("save-category").innerHTML = "Update Category";
-
-}
-
-function resetCategoryForm(){
-
-    document.getElementById("category-form").reset();
-
-    document.getElementById("category-form").action = "/add_category";
-
-    document.getElementById("save-category").innerHTML = "Save Category";
-
-    document.getElementById("category_id").value = "";
-
-}
 function resetBorrowForm() {
 
     document.getElementById("borrow-form").reset();
@@ -134,13 +159,22 @@ function resetBorrowForm() {
 
     document.getElementById("issue_id").value = "";
 
+    document.getElementById("entry_date").value =
+        new Date().toISOString().split("T")[0];
+
+    document.getElementById("status").value = "Issued";
+
 }
+
+// ================= ENTER KEY =================
+
 document.addEventListener("keydown", function (e) {
 
     if (e.key !== "Enter") return;
 
     const bookForm = document.getElementById("book-form");
     const categoryForm = document.getElementById("category-form");
+    const borrowForm = document.getElementById("borrow-form");
 
     if (bookForm) {
 
@@ -156,5 +190,41 @@ document.addEventListener("keydown", function (e) {
 
     }
 
+    else if (borrowForm) {
+
+        e.preventDefault();
+        borrowForm.requestSubmit();
+
+    }
+
 });
 
+// ================= ESC KEY =================
+
+document.addEventListener("keydown", function (e) {
+
+    if (e.key !== "Escape") return;
+
+    const bookForm = document.getElementById("book-form");
+    const categoryForm = document.getElementById("category-form");
+    const borrowForm = document.getElementById("borrow-form");
+
+    if (bookForm) {
+
+        resetBookForm();
+
+    }
+
+    else if (categoryForm) {
+
+        resetCategoryForm();
+
+    }
+
+    else if (borrowForm) {
+
+        resetBorrowForm();
+
+    }
+
+});
