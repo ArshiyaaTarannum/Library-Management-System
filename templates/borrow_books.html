@@ -106,3 +106,90 @@
             <label>Student ID</label>
 
             <input type="text" name="student_id" id="student_id" required>
+<label>Book</label>
+
+<select name="book_id" id="book_id" required>
+
+    <option value="">
+        Select Book
+    </option>
+
+    {% for book in books %}
+
+    <option value="{{ book[0] }}">
+
+        {{ book[0] }} - {{ book[1] }}
+
+    </option>
+
+    {% endfor %}
+
+</select>
+
+<label>Issue Date</label>
+
+<input type="date" name="issue_date" id="issue_date" value="{{ today }}" required>
+
+<label>Due Date</label>
+
+<input type="date" name="due_date" id="due_date" required>
+
+<label>Return Date</label>
+
+<input type="date" name="return_date" id="return_date">
+
+<label>Status</label>
+
+<input type="text" name="status" id="status" value="Issued" readonly>
+
+<button id="save-borrow" type="submit">
+
+    Issue Book
+
+</button>
+
+<button type="reset" onclick="resetBorrowForm()">
+
+    Clear
+
+</button>
+
+</form>
+
+</div>
+
+<!-- BORROW TABLE -->
+
+<table class="category-table">
+
+    <tr>
+
+        <th>Entry Date</th>
+        <th>Issue ID</th>
+        <th>Student Name</th>
+        <th>Student ID</th>
+        <th>Book</th>
+        <th>Issue Date</th>
+        <th>Due Date</th>
+        <th>Return Date</th>
+        <th>Status</th>
+        <th>Edit</th>
+        <th>Return</th>
+
+    </tr>
+
+    {% if borrow_records %}
+
+    {% for borrow in borrow_records %}
+
+    <tr ondblclick="loadBorrow(
+            '{{ borrow[0] }}',
+            '{{ borrow[1] }}',
+            '{{ borrow[3] }}',
+            '{{ borrow[4] }}',
+            '{{ borrow[5] }}',
+            '{{ borrow[6] }}',
+            '{{ borrow[7] }}',
+            '{{ borrow[8] }}',
+            '{{ borrow[9] }}'
+        )">
