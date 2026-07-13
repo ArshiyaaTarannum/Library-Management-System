@@ -305,37 +305,47 @@
         {% endif %}
 
     </table>
-<!-- NAVIGATION -->
+    <!-- NAVIGATION -->
 
-<div class="navigation-buttons">
+    <div class="navigation-buttons">
 
-    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
 
-        Dashboard
+            Dashboard
 
-    </a>
+        </a>
 
-    <a href="{{ url_for('add_books') }}" class="nav-btn">
+        <a href="{{ url_for('add_books') }}" class="nav-btn">
 
-        Book Management
+            Book Management
 
-    </a>
+        </a>
 
-    <a href="{{ url_for('category') }}" class="nav-btn">
+        <a href="{{ url_for('category') }}" class="nav-btn">
 
-        Category Management
+            Category Management
 
-    </a>
+        </a>
+        <a href="{{ url_for('view_categories') }}" class="nav-btn">
+        
+            Reader Categories
+        
+        </a>
+        <a href="{{ url_for('books') }}" class="nav-btn">
+        
+            Reader Books
+        
+        </a>
 
-    <a href="{{ url_for('books') }}" class="nav-btn">
+        <a href="{{ url_for('books') }}" class="nav-btn">
 
-        Reader View
+            Reader View
 
-    </a>
+        </a>
 
-</div>
+    </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
 
