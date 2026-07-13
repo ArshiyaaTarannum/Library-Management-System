@@ -21,7 +21,6 @@ cur = conn.cursor()
 
 # DASHBOARD PAGE 
 
-
 @app.route("/")
 def dashboard():
     return render_template("index.html")
@@ -227,7 +226,7 @@ def update_book():
             Author=%s,
             CategoryID=%s,
             Publication=%s,
-            PublicationDate=%s
+            PublicationDate=%s,
             EntryDate=%s
         WHERE BookID=%s
     """, (
