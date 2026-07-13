@@ -500,7 +500,7 @@ def borrow_books():
     search = request.args.get("search", "").strip()
     search_by = request.args.get("search_by", "")
 
-    # ---------------- Available Books ----------------
+    #  Available Books
 
     cur.execute("""
         SELECT BookID, BookName
@@ -511,7 +511,7 @@ def borrow_books():
 
     books = cur.fetchall()
 
-    # ---------------- Generate Next Issue ID ----------------
+    #  Generate Next Issue ID
 
     cur.execute("""
         SELECT IssueID
@@ -528,7 +528,7 @@ def borrow_books():
         number = int(last_issue[0][3:]) + 1
         next_issue_id = f"ISS{number:03d}"
 
-    # ---------------- Borrow Records ----------------
+    #  Borrow Records
 
     query = """
         SELECT
