@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Borrow Book Management</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Borrow Book Management</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="flash-message">
+
+        {{ message }}
+
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
+    <p class="subtitle">
+
+        Issue books, return books and manage library borrowing records.
+
+    </p>
+
+    <!-- SEARCH -->
+
+    <div class="top-search">
+
+        <button id="search-icon" class="search-icon">
+
+            🔍
+
+        </button>
+
+    </div>
+
+    <div id="search-box" class="search-box">
+
+        <form action="{{ url_for('borrow_books') }}" method="GET">
+
+            <select name="search_by">
+
+                <option value="student_name">Student Name</option>
+                <option value="student_id">Student ID</option>
+                <option value="book">Book</option>
+                <option value="issue_id">Issue ID</option>
+                <option value="status">Status</option>
+
+            </select>
+
+            <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search','') }}">
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+            <a href="{{ url_for('borrow_books') }}" class="clear-btn">
+
+                Clear
+
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- FORM -->
+
+    <div class="container">
+
+        <form id="borrow-form" action="{{ url_for('borrow_book') }}" method="POST" autocomplete="off">
+
+            <input type="hidden" name="issue_id" id="issue_id">
+
+            <label>Entry Date</label>
+
+            <input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
+
+            <label>Issue ID</label>
+
+            <input type="text" id="display_issue_id" value="{{ next_issue_id }}" readonly>
+
+            <label>Student Name</label>
+
+            <input type="text" name="student_name" id="student_name" required>
+
+            <label>Student ID</label>
+
+            <input type="text" name="student_id" id="student_id" required>
