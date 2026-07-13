@@ -193,63 +193,63 @@
             '{{ borrow[8] }}',
             '{{ borrow[9] }}'
         )">
-<td>
+            <td>
 
-    {{ borrow[8] }}
+                {{ borrow[8] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[0] }}
+                {{ borrow[0] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[3] }}
+                {{ borrow[3] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[4] }}
+                {{ borrow[4] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[2] }}
+                {{ borrow[2] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[5] }}
+                {{ borrow[5] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[6] }}
+                {{ borrow[6] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[7] if borrow[7] else "-" }}
+                {{ borrow[7] if borrow[7] else "-" }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {{ borrow[9] }}
+                {{ borrow[9] }}
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    <button type="button" class="edit-btn" onclick="loadBorrow(
+                <button type="button" class="edit-btn" onclick="loadBorrow(
                         '{{ borrow[0] }}',
                         '{{ borrow[1] }}',
                         '{{ borrow[3] }}',
@@ -261,47 +261,82 @@
                         '{{ borrow[9] }}'
                     )">
 
-        Edit
+                    Edit
 
-    </button>
+                </button>
 
-</td>
+            </td>
 
-<td>
+            <td>
 
-    {% if borrow[9] == "Issued" %}
+                {% if borrow[9] == "Issued" %}
 
-    <a href="{{ url_for('return_book', issue_id=borrow[0]) }}" class="edit-btn"
-        onclick="return confirm('Return this book?')">
+                <a href="{{ url_for('return_book', issue_id=borrow[0]) }}" class="edit-btn"
+                    onclick="return confirm('Return this book?')">
 
-        Return
+                    Return
+
+                </a>
+
+                {% else %}
+
+                Returned
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        {% else %}
+
+        <tr>
+
+            <td colspan="11">
+
+                No Borrow Records Found
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+<!-- NAVIGATION -->
+
+<div class="navigation-buttons">
+
+    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+
+        Dashboard
 
     </a>
 
-    {% else %}
+    <a href="{{ url_for('add_books') }}" class="nav-btn">
 
-    Returned
+        Book Management
 
-    {% endif %}
+    </a>
 
-</td>
+    <a href="{{ url_for('category') }}" class="nav-btn">
 
-</tr>
+        Category Management
 
-{% endfor %}
+    </a>
 
-{% else %}
+    <a href="{{ url_for('books') }}" class="nav-btn">
 
-<tr>
+        Reader View
 
-    <td colspan="11">
+    </a>
 
-        No Borrow Records Found
+</div>
 
-    </td>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
-</tr>
+</body>
 
-{% endif %}
-
-</table>
+</html>
