@@ -106,83 +106,83 @@
             <label>Student ID</label>
 
             <input type="text" name="student_id" id="student_id" required>
-<label>Book</label>
+            <label>Book</label>
 
-<select name="book_id" id="book_id" required>
+            <select name="book_id" id="book_id" required>
 
-    <option value="">
-        Select Book
-    </option>
+                <option value="">
+                    Select Book
+                </option>
 
-    {% for book in books %}
+                {% for book in books %}
 
-    <option value="{{ book[0] }}">
+                <option value="{{ book[0] }}">
 
-        {{ book[0] }} - {{ book[1] }}
+                    {{ book[0] }} - {{ book[1] }}
 
-    </option>
+                </option>
 
-    {% endfor %}
+                {% endfor %}
 
-</select>
+            </select>
 
-<label>Issue Date</label>
+            <label>Issue Date</label>
 
-<input type="date" name="issue_date" id="issue_date" value="{{ today }}" required>
+            <input type="date" name="issue_date" id="issue_date" value="{{ today }}" required>
 
-<label>Due Date</label>
+            <label>Due Date</label>
 
-<input type="date" name="due_date" id="due_date" required>
+            <input type="date" name="due_date" id="due_date" required>
 
-<label>Return Date</label>
+            <label>Return Date</label>
 
-<input type="date" name="return_date" id="return_date">
+            <input type="date" name="return_date" id="return_date">
 
-<label>Status</label>
+            <label>Status</label>
 
-<input type="text" name="status" id="status" value="Issued" readonly>
+            <input type="text" name="status" id="status" value="Issued" readonly>
 
-<button id="save-borrow" type="submit">
+            <button id="save-borrow" type="submit">
 
-    Issue Book
+                Issue Book
 
-</button>
+            </button>
 
-<button type="reset" onclick="resetBorrowForm()">
+            <button type="reset" onclick="resetBorrowForm()">
 
-    Clear
+                Clear
 
-</button>
+            </button>
 
-</form>
+        </form>
 
-</div>
+    </div>
 
-<!-- BORROW TABLE -->
+    <!-- BORROW TABLE -->
 
-<table class="category-table">
+    <table class="category-table">
 
-    <tr>
+        <tr>
 
-        <th>Entry Date</th>
-        <th>Issue ID</th>
-        <th>Student Name</th>
-        <th>Student ID</th>
-        <th>Book</th>
-        <th>Issue Date</th>
-        <th>Due Date</th>
-        <th>Return Date</th>
-        <th>Status</th>
-        <th>Edit</th>
-        <th>Return</th>
+            <th>Entry Date</th>
+            <th>Issue ID</th>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Book</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Edit</th>
+            <th>Return</th>
 
-    </tr>
+        </tr>
 
-    {% if borrow_records %}
+        {% if borrow_records %}
 
-    {% for borrow in borrow_records %}
+        {% for borrow in borrow_records %}
 
-    <tr ondblclick="loadBorrow(
+        <tr ondblclick="loadBorrow(
             '{{ borrow[0] }}',
             '{{ borrow[1] }}',
             '{{ borrow[3] }}',
@@ -193,3 +193,115 @@
             '{{ borrow[8] }}',
             '{{ borrow[9] }}'
         )">
+<td>
+
+    {{ borrow[8] }}
+
+</td>
+
+<td>
+
+    {{ borrow[0] }}
+
+</td>
+
+<td>
+
+    {{ borrow[3] }}
+
+</td>
+
+<td>
+
+    {{ borrow[4] }}
+
+</td>
+
+<td>
+
+    {{ borrow[2] }}
+
+</td>
+
+<td>
+
+    {{ borrow[5] }}
+
+</td>
+
+<td>
+
+    {{ borrow[6] }}
+
+</td>
+
+<td>
+
+    {{ borrow[7] if borrow[7] else "-" }}
+
+</td>
+
+<td>
+
+    {{ borrow[9] }}
+
+</td>
+
+<td>
+
+    <button type="button" class="edit-btn" onclick="loadBorrow(
+                        '{{ borrow[0] }}',
+                        '{{ borrow[1] }}',
+                        '{{ borrow[3] }}',
+                        '{{ borrow[4] }}',
+                        '{{ borrow[5] }}',
+                        '{{ borrow[6] }}',
+                        '{{ borrow[7] }}',
+                        '{{ borrow[8] }}',
+                        '{{ borrow[9] }}'
+                    )">
+
+        Edit
+
+    </button>
+
+</td>
+
+<td>
+
+    {% if borrow[9] == "Issued" %}
+
+    <a href="{{ url_for('return_book', issue_id=borrow[0]) }}" class="edit-btn"
+        onclick="return confirm('Return this book?')">
+
+        Return
+
+    </a>
+
+    {% else %}
+
+    Returned
+
+    {% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+
+    <td colspan="11">
+
+        No Borrow Records Found
+
+    </td>
+
+</tr>
+
+{% endif %}
+
+</table>
