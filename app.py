@@ -293,10 +293,19 @@ def add_books():
             Book.Publication,
             Book.PublicationDate,
             Book.EntryDate
+        COUNT(BookCopy.CopyID)
+
         FROM Book
+
         JOIN Category
         ON Book.CategoryID = Category.CategoryID
+
+        LEFT JOIN BookCopy
+        ON Book.BookID = BookCopy.BookID
+
         WHERE 1=1
+
+        GROUP BY Book.BookID
     """
 
     values = []
@@ -545,6 +554,65 @@ def add_book():
 
     return redirect(url_for("add_books"))
 
+
+@app.route("/inventory")
+def inventory():
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM Book
+    """)
+
+    total_books = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+    """)
+
+    total_copies = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+        WHERE Status='Available'
+    """)
+
+    available = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+        WHERE Status='Issued'
+    """)
+
+    issued = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+        WHERE Status='Damaged'
+    """)
+
+    damaged = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+        WHERE Status='Lost'
+    """)
+
+    lost = cur.fetchone()[0]
+
+    return render_template(
+        "inventory.html",
+        total_books=total_books,
+        total_copies=total_copies,
+        available=available,
+        issued=issued,
+        damaged=damaged,
+        lost=lost
+    )
 
 @app.route("/view_categories")
 def view_categories():
