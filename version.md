@@ -14,9 +14,3 @@ v0.3
 - Reader Portal
 - Read-only Catalogue
 
-v0.4 (Current)
-- Borrow Management
-- Book Issue Records
-- Book Availability Status
-- Search Borrow Records
-- Borrow History
