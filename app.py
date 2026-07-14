@@ -292,9 +292,8 @@ def add_books():
             Book.CategoryID,
             Book.Publication,
             Book.PublicationDate,
-            Book.EntryDate
-        COUNT(BookCopy.CopyID)
-
+            Book.EntryDate,
+            COUNT(BookCopy.CopyID)
         FROM Book
 
         JOIN Category
