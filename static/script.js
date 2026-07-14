@@ -49,7 +49,11 @@ function loadBook(
     categoryId,
     publication,
     publicationDate,
-    entryDate
+    entryDate,
+    language,
+    edition,
+    totalCopies,
+    purchasePrice
 ) {
 
     document.getElementById("book_id").value = id;
