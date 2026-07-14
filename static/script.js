@@ -42,6 +42,8 @@ setTimeout(function () {
 
 // ================= BOOK =================
 
+// ================= BOOK =================
+
 function loadBook(
     id,
     name,
@@ -52,23 +54,42 @@ function loadBook(
     entryDate,
     language,
     edition,
-    totalCopies,
     purchasePrice
 ) {
 
+
     document.getElementById("book_id").value = id;
+
     document.getElementById("display_book_id").value = id;
 
+
     document.getElementById("book_name").value = name;
+
     document.getElementById("author").value = author;
+
     document.getElementById("category_id").value = categoryId;
+
     document.getElementById("publication").value = publication;
+
+
     document.getElementById("publication_date").value = publicationDate;
+
     document.getElementById("entry_date").value = entryDate;
+
+
+    document.getElementById("language").value = language;
+
+    document.getElementById("edition").value = edition;
+
+    document.getElementById("purchase_price").value = purchasePrice;
+
+
 
     document.getElementById("book-form").action = "/update_book";
 
+
     document.getElementById("save-btn").innerHTML = "Update Book";
+
 
 }
 
@@ -84,6 +105,8 @@ function resetBookForm() {
 
     document.getElementById("entry_date").value =
         new Date().toISOString().split("T")[0];
+    document.getElementById("display_book_id").value = "";
+    document.getElementById("display_book_id").value = "{{ next_book_id }}";
 
 }
 
