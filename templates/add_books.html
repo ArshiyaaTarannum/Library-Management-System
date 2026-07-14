@@ -3,12 +3,12 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Library Book Management</title>
+    <title>Library Book Management</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
@@ -16,284 +16,284 @@
 <body>
 
 
-<h1>Library Book Management</h1>
+    <h1>Library Book Management</h1>
 
 
 
-{% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages() %}
 
-{% if messages %}
+    {% if messages %}
 
-{% for message in messages %}
+    {% for message in messages %}
 
-<div class="flash-message">
-    {{ message }}
-</div>
+    <div class="flash-message">
+        {{ message }}
+    </div>
 
-{% endfor %}
+    {% endfor %}
 
-{% endif %}
+    {% endif %}
 
-{% endwith %}
+    {% endwith %}
 
 
 
 
-<p class="subtitle">
+    <p class="subtitle">
 
-Add, search, update and manage books. Only for Librarians.
+        Add, search, update and manage books. Only for Librarians.
 
-</p>
+    </p>
 
 
-<div class="stats-bar">
+    <div class="stats-bar">
 
 
-<div class="stats-card">
+        <div class="stats-card">
 
-Total Books :
-<strong>{{ total_books }}</strong>
+            Total Books :
+            <strong>{{ total_books }}</strong>
 
-</div>
+        </div>
 
 
-</div>
+    </div>
 
-<!-- SEARCH SECTION -->
+    <!-- SEARCH SECTION -->
 
 
-<div class="top-search">
+    <div class="top-search">
 
 
-<button id="search-icon" class="search-icon">
+        <button id="search-icon" class="search-icon">
 
-🔍
+            🔍
 
-</button>
+        </button>
 
 
-</div>
+    </div>
 
 
 
-<div id="search-box" class="search-box">
+    <div id="search-box" class="search-box">
 
 
 
-<form action="{{ url_for('add_books') }}" method="GET">
+        <form action="{{ url_for('add_books') }}" method="GET">
 
 
 
-<select name="search_by">
+            <select name="search_by">
 
-<option value="book_name">
-    Book Name
-</option>
+                <option value="book_name">
+                    Book Name
+                </option>
 
 
-<option value="book_id">
-    Book ID
-</option>
+                <option value="book_id">
+                    Book ID
+                </option>
 
 
-<option value="author">
-    Author
-</option>
+                <option value="author">
+                    Author
+                </option>
 
 
-<option value="publication">
-    Publication
-</option>
+                <option value="publication">
+                    Publication
+                </option>
 
 
-<option value="category">
-    Category
-</option>
+                <option value="category">
+                    Category
+                </option>
 
 
-</select>
+            </select>
 
-<input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search','') }}">
+            <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search','') }}">
 
 
-<button type="submit">
+            <button type="submit">
 
-Search
+                Search
 
-</button>
+            </button>
 
 
 
-<a href="{{ url_for('add_books') }}" class="clear-btn">
+            <a href="{{ url_for('add_books') }}" class="clear-btn">
 
-Clear
+                Clear
 
-</a>
+            </a>
 
 
 
-</form>
+        </form>
 
 
-</div>
+    </div>
 
-<!-- FORM -->
-<!-- FORM -->
+    <!-- FORM -->
+    <!-- FORM -->
 
 
-<div class="container">
+    <div class="container">
 
 
-<form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
+        <form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
 
-<input type="hidden" name="book_id" id="book_id">
+            <input type="hidden" name="book_id" id="book_id">
 
-<label>Date of Entry</label>
+            <label>Date of Entry</label>
 
-<input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
+            <input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
 
 
 
-<label>Book ID</label>
+            <label>Book ID</label>
 
-<input type="text" id="display_book_id" value="{{ next_book_id }}" readonly>
+            <input type="text" id="display_book_id" value="{{ next_book_id }}" readonly>
 
 
-<label>Book Name</label>
+            <label>Book Name</label>
 
-<input type="text" name="book_name" id="book_name" required>
+            <input type="text" name="book_name" id="book_name" required>
 
 
-<label>Author</label>
+            <label>Author</label>
 
-<input type="text" name="author" id="author" required>
+            <input type="text" name="author" id="author" required>
 
 
-<label>Category</label>
+            <label>Category</label>
 
-<select name="category_id" id="category_id" required>
+            <select name="category_id" id="category_id" required>
 
 
-<option value="">
+                <option value="">
 
-Select Category
+                    Select Category
 
-</option>
+                </option>
 
 
 
-{% for category in categories %}
+                {% for category in categories %}
 
 
-<option value="{{ category[0] }}">
+                <option value="{{ category[0] }}">
 
-{{ category[1] }}
+                    {{ category[1] }}
 
-</option>
+                </option>
 
 
 
-{% endfor %}
+                {% endfor %}
 
 
 
-</select>
+            </select>
 
 
 
-<label>Publication</label>
+            <label>Publication</label>
 
-<input type="text" name="publication" id="publication" required>
+            <input type="text" name="publication" id="publication" required>
 
 
 
-<label>Publication Date</label>
+            <label>Publication Date</label>
 
 
-<input type="date" name="publication_date" id="publication_date" required>
+            <input type="date" name="publication_date" id="publication_date" required>
 
 
 
-<label>Language</label>
+            <label>Language</label>
 
 
-<select name="language" id="language" required>
+            <select name="language" id="language" required>
 
 
-<option value="">
-    Select Language
-</option>
+                <option value="">
+                    Select Language
+                </option>
 
-<option>
-    English
-</option>
+                <option>
+                    English
+                </option>
 
 
-<option>
-    Hindi
-</option>
+                <option>
+                    Hindi
+                </option>
 
 
-<option>
-    Odia
-</option>
+                <option>
+                    Odia
+                </option>
 
 
-<option>
-    Bengali
-</option>
+                <option>
+                    Bengali
+                </option>
 
 
-<option>
-    Urdu
-</option>
+                <option>
+                    Urdu
+                </option>
 
 
-<option>
-    Tamil
-</option>
+                <option>
+                    Tamil
+                </option>
 
 
-<option>
-    Telugu
-</option>
+                <option>
+                    Telugu
+                </option>
 
 
-<option>
-    Malayalam
-</option>
+                <option>
+                    Malayalam
+                </option>
 
 
-<option>
-    Kannada
-</option>
+                <option>
+                    Kannada
+                </option>
 
 
-<option>
-    Marathi
-</option>
+                <option>
+                    Marathi
+                </option>
 
 
-<option>
-    Gujarati
-</option>
+                <option>
+                    Gujarati
+                </option>
 
 
-<option>
-    Punjabi
-</option>
+                <option>
+                    Punjabi
+                </option>
 
 
-<option>
-    Other
-</option>
+                <option>
+                    Other
+                </option>
 
-</select>
+            </select>
 
 
 
-<label>Edition</label>
-<input type="text" name="edition" id="edition" placeholder="Example: 3rd Edition" required>
+            <label>Edition</label>
+            <input type="text" name="edition" id="edition" placeholder="Example: 3rd Edition" required>
 
 
 
@@ -302,173 +302,173 @@ Select Category
 
 
 
-<label>Total Copies</label>
+            <label>Total Copies</label>
 
 
-<input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
+            <input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
 
 
 
-<label>Purchase Price (₹)</label>
+            <label>Purchase Price (₹)</label>
 
 
-<input type="number" name="purchase_price" id="purchase_price" min="0" step="0.01" required>
+            <input type="number" name="purchase_price" id="purchase_price" min="0" step="0.01" required>
 
 
 
-<button id="save-btn" type="submit">
+            <button id="save-btn" type="submit">
 
-Save Book
+                Save Book
 
-</button>
+            </button>
 
 
 
-<button type="reset" onclick="resetBookForm()">
+            <button type="reset" onclick="resetBookForm()">
 
-Clear
+                Clear
 
-</button>
+            </button>
 
 
 
-</form>
+        </form>
 
 
-</div>
+    </div>
 
 
 
-<!-- BOOK TABLE -->
-<!-- BOOK TABLE -->
+    <!-- BOOK TABLE -->
+    <!-- BOOK TABLE -->
 
 
-<table class="category-table">
+    <table class="category-table">
 
 
-<tr>
+        <tr>
 
-<th>Date of Entry</th>
+            <th>Date of Entry</th>
 
-<th>Book ID</th>
+            <th>Book ID</th>
 
-<th>Book Name</th>
+            <th>Book Name</th>
 
-<th>Author</th>
+            <th>Author</th>
 
-<th>Category</th>
+            <th>Category</th>
 
-<th>Language</th>
+            <th>Language</th>
 
-<th>Edition</th>
+            <th>Edition</th>
 
-<th>Copies</th>
+            <th>Copies</th>
 
-<th>Price</th>
+            <th>Price</th>
 
-<th>Publication</th>
+            <th>Publication</th>
 
-<th>Publication Date</th>
+            <th>Publication Date</th>
 
-<th>Edit</th>
+            <th>Edit</th>
 
-<th>Delete</th>
+            <th>Delete</th>
 
 
-</tr>
+        </tr>
 
 
 
 
-{% if books %}
+        {% if books %}
 
 
 
 
-{% for book in books %}
+        {% for book in books %}
 
 
-<tr>
+        <tr>
 
 
 
-<td>
-    {{ book[7] }}
-</td>
+            <td>
+                {{ book[7] }}
+            </td>
 
 
 
-<td>
-    {{ book[0] }}
-</td>
+            <td>
+                {{ book[0] }}
+            </td>
 
 
 
 
-<td>
-    {{ book[1] }}
-</td>
+            <td>
+                {{ book[1] }}
+            </td>
 
 
 
 
-<td>
-    {{ book[2] }}
-</td>
+            <td>
+                {{ book[2] }}
+            </td>
 
 
 
 
-<td>
-    {{ book[3] }}
-</td>
+            <td>
+                {{ book[3] }}
+            </td>
 
 
-<td>
-    {{ book[8] }}
-</td>
+            <td>
+                {{ book[8] }}
+            </td>
 
 
 
 
 
-<td>
-    {{ book[9] }}
-</td>
+            <td>
+                {{ book[9] }}
+            </td>
 
 
 
 
 
-<td>
-    {{ book[10] }}
-</td>
+            <td>
+                {{ book[10] }}
+            </td>
 
 
 
 
 
-<td>
-    ₹ {{ book[11] }}
-</td>
+            <td>
+                ₹ {{ book[11] }}
+            </td>
 
-<td>
-    {{ book[5] }}
-</td>
+            <td>
+                {{ book[5] }}
+            </td>
 
 
-<td>
-    {{ book[6] }}
-</td>
+            <td>
+                {{ book[6] }}
+            </td>
 
 
 
 
 
-<td>
+            <td>
 
 
-<button type="button" class="edit-btn" onclick="loadBook(
+                <button type="button" class="edit-btn" onclick="loadBook(
 
 '{{ book[0] }}',
 '{{ book[1] }}',
@@ -484,75 +484,133 @@ Clear
 )">
 
 
-Edit
+                    Edit
 
 
-</button>
+                </button>
 
 
-</td>
-
-
-
-
-
-
-<td>
-
-
-<a href="{{ url_for('delete_book',book_id=book[0]) }}" class="delete-btn" onclick="return confirm('Delete this book?')">
-
-
-Delete
-
-
-</a>
-
-
-
-</td>
-
-
-
-
-</tr>
+            </td>
 
 
 
 
 
-{% endfor %}
+
+            <td>
+
+
+                <a href="{{ url_for('delete_book',book_id=book[0]) }}" class="delete-btn" onclick="return confirm('Delete this book?')">
+
+
+                    Delete
+
+
+                </a>
+
+
+
+            </td>
+
+
+
+
+        </tr>
 
 
 
 
 
-{% else %}
-
-
-
-
-<tr>
-
-<td colspan="13">
-
-
-No Books Found
-
-
-</td>
-
-
-</tr>
+        {% endfor %}
 
 
 
 
 
-{% endif %}
+        {% else %}
+
+
+
+
+        <tr>
+
+            <td colspan="13">
+
+
+                No Books Found
+
+
+            </td>
+
+
+        </tr>
 
 
 
 
 
-</table>
+        {% endif %}
+
+
+
+
+
+    </table>
+    <div class="navigation-buttons">
+    
+    
+    
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
+    
+            Dashboard
+    
+        </a>
+    
+    
+    
+    
+    
+        <a href="{{ url_for('category') }}" class="nav-btn">
+    
+            Category Management
+    
+        </a>
+    
+    
+    
+    
+    
+        <a href="{{ url_for('books') }}" class="nav-btn">
+    
+            Reader View
+    
+        </a>
+    
+    
+    
+    
+    
+        <a href="{{ url_for('inventory') }}" class="nav-btn">
+    
+            Inventory
+    
+        </a>
+    
+    
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    
+    
+    </body>
+    
+    
+    </html>
