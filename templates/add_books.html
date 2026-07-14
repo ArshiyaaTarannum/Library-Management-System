@@ -3,366 +3,556 @@
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Library Book Management</title>
+<title>Library Book Management</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
+
 <body>
 
-    <h1>Library Book Management</h1>
 
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
+<h1>Library Book Management</h1>
 
-    {% for message in messages %}
 
-    <div class="flash-message">
-        {{ message }}
-    </div>
 
-    {% endfor %}
+{% with messages = get_flashed_messages() %}
 
-    {% endif %}
-    {% endwith %}
+{% if messages %}
 
+{% for message in messages %}
 
-    <p class="subtitle">
-        Add, search, update and manage books. Only for Librarians.
-    </p>
-    <div class="stats-bar">
+<div class="flash-message">
+    {{ message }}
+</div>
 
-        <div class="stats-card">
+{% endfor %}
 
-            Total Books : <strong>{{ total_books }}</strong>
+{% endif %}
 
-        </div>
+{% endwith %}
 
-    </div>
 
-    <!-- SEARCH -->
 
-    <div class="top-search">
 
-        <button id="search-icon" class="search-icon">
+<p class="subtitle">
 
-            🔍
+Add, search, update and manage books. Only for Librarians.
 
-        </button>
+</p>
 
-    </div>
 
-    <div id="search-box" class="search-box">
+<div class="stats-bar">
 
-        <form action="{{ url_for('add_books') }}" method="GET">
 
-            <select name="search_by">
+<div class="stats-card">
 
-                <option value="book_name">Book Name</option>
-                <option value="book_id">Book ID</option>
-                <option value="author">Author</option>
-                <option value="publication">Publication</option>
-                <option value="category">Category</option>
+Total Books :
+<strong>{{ total_books }}</strong>
 
-            </select>
+</div>
 
-            <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search','') }}">
 
-            <button type="submit">
+</div>
 
-                Search
+<!-- SEARCH SECTION -->
 
-            </button>
 
-            <a href="{{ url_for('add_books') }}" class="clear-btn">
+<div class="top-search">
 
-                Clear
 
-            </a>
+<button id="search-icon" class="search-icon">
 
-        </form>
+🔍
 
-    </div>
+</button>
 
-    <!-- FORM -->
 
-    <div class="container">
+</div>
 
 
-        <form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
 
-            <label>Date of Entry</label>
+<div id="search-box" class="search-box">
 
-            <input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
 
-            <input type="hidden" name="book_id" id="book_id">
 
-            <label>Book ID</label>
+<form action="{{ url_for('add_books') }}" method="GET">
 
-            <input type="text" id="display_book_id" value="{{ next_book_id }}" readonly>
 
-            <label>Book Name</label>
 
-            <input type="text" name="book_name" id="book_name" required>
+<select name="search_by">
 
-            <label>Author</label>
+<option value="book_name">
+    Book Name
+</option>
 
-            <input type="text" name="author" id="author" required>
 
-            <label>Category</label>
+<option value="book_id">
+    Book ID
+</option>
 
-            <select name="category_id" id="category_id" required>
-
-                <option value="">
-                    Select Category
-                </option>
-
-                {% for category in categories %}
-
-                <option value="{{ category[0] }}">
-
-                    {{ category[1] }}
 
-                </option>
+<option value="author">
+    Author
+</option>
 
-                {% endfor %}
 
-            </select>
-
-            <label>Publication</label>
-
-            <input type="text" name="publication" id="publication" required>
-
-            <label>Publication Date</label>
+<option value="publication">
+    Publication
+</option>
 
-            <input type="date" name="publication_date" id="publication_date" required>
-
-            <label>Language</label>
-            
-            <select name="language" id="language" required>
-            
-                <option value="">Select Language</option>
-            
-                <option>English</option>
-            
-                <option>Hindi</option>
-            
-                <option>Odia</option>
-            
-                <option>Bengali</option>
-            
-                <option>Urdu</option>
-            
-                <option>Tamil</option>
-            
-                <option>Telugu</option>
-            
-                <option>Malayalam</option>
-            
-                <option>Kannada</option>
-            
-                <option>Marathi</option>
-            
-                <option>Gujarati</option>
-            
-                <option>Punjabi</option>
-            
-                <option>Other</option>
-            
-            </select>
-            
-            <label>Edition</label>
-            <input type="text" name="edition" id="edition" placeholder="e.g. 3rd Edition" required>
-            <label>Total Copies</label>
-            
-            <input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
-            
-            <label>Purchase Price (₹)</label>
-            
-            <input type="number" name="purchase_price" id="purchase_price" min="0" step="0.01" required>
 
-            <button id="save-btn" type="submit">
+<option value="category">
+    Category
+</option>
 
-                Save Book
 
-            </button>
+</select>
 
-            <button type="reset" onclick="resetBookForm()">
+<input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search','') }}">
 
-                Clear
 
-            </button>
+<button type="submit">
 
-        </form>
+Search
 
-    </div>
+</button>
 
-    <!-- BOOK TABLE -->
 
-    <table class="category-table">
-        <tr>
-            <th>Date of Entry</th>
-            <th>Book ID</th>
-            <th>Book Name</th>
-            <th>Author</th>
-            <th>Category</th>
-            <th>Language</th>
-            <th>Edition</th>
-            <th>Copies</th>
-            <th>Price</th>
-            <th>Publication</th>
-            <th>Publication Date</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
 
+<a href="{{ url_for('add_books') }}" class="clear-btn">
 
-        {% if books %}
+Clear
 
+</a>
 
-        {% for book in books %}
 
 
-        <tr ondblclick="loadBook(
-                                                                        '{{ book[0] }}',
-                                                                        '{{ book[1] }}',
-                                                                        '{{ book[2] }}',
-                                                                        '{{ book[4] }}',
-                                                                        '{{ book[5] }}',
-                                                                        '{{ book[6] }}',
-                                                                        '{{ book[7] }}'
-                                                                    )">
+</form>
 
 
-            <td>
-                {{ book[7] }}
-            </td>
+</div>
 
-            <td>
-                {{ book[0] }}
-            </td>
+<!-- FORM -->
+<!-- FORM -->
 
 
-            <td>
-                {{ book[1] }}
-            </td>
+<div class="container">
 
 
-            <td>
-                {{ book[2] }}
-            </td>
+<form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
 
+<input type="hidden" name="book_id" id="book_id">
 
-            <td>
-                {{ book[3] }}
-            </td>
+<label>Date of Entry</label>
 
+<input type="date" name="entry_date" id="entry_date" value="{{ today }}" required>
 
-            <td>
-                {{ book[5] }}
-            </td>
-            <td>
-                {{ book[6] }}
-            </td>
 
 
+<label>Book ID</label>
 
-            <td>
+<input type="text" id="display_book_id" value="{{ next_book_id }}" readonly>
 
 
-                <button type="button" class="edit-btn" onclick="loadBook(
-                    '{{ book[0] }}',
-                    '{{ book[1] }}',
-                    '{{ book[2] }}',
-        '{{ book[4] }}',
-        '{{ book[5] }}',
-        '{{ book[6] }}',
-        '{{ book[7] }}'
-    )">
+<label>Book Name</label>
 
-                    Edit
+<input type="text" name="book_name" id="book_name" required>
 
-                </button>
 
+<label>Author</label>
 
-            </td>
+<input type="text" name="author" id="author" required>
 
 
+<label>Category</label>
 
+<select name="category_id" id="category_id" required>
 
-            <td>
 
+<option value="">
 
-                <a href="{{ url_for('delete_book',book_id=book[0]) }}" class="delete-btn"
-                    onclick="return confirm('Delete this book?')">
+Select Category
 
-                    Delete
+</option>
 
-                </a>
 
 
-            </td>
+{% for category in categories %}
 
 
-        </tr>
+<option value="{{ category[0] }}">
 
+{{ category[1] }}
 
-        {% endfor %}
+</option>
 
 
 
-        {% else %}
+{% endfor %}
 
 
-        <tr>
 
-            <td colspan="9">
+</select>
 
-                No Books Found
 
-            </td>
 
-        </tr>
+<label>Publication</label>
 
+<input type="text" name="publication" id="publication" required>
 
-        {% endif %}
 
 
-    </table>
+<label>Publication Date</label>
 
-    <div class="navigation-buttons">
 
-        <a href="{{ url_for('dashboard') }}" class="nav-btn">
+<input type="date" name="publication_date" id="publication_date" required>
 
-            Dashboard
 
-        </a>
 
-        <a href="{{ url_for('category') }}" class="nav-btn">
+<label>Language</label>
 
-            Category Management
 
-        </a>
-        <a href="{{ url_for('borrow_books') }}" class="nav-btn">
+<select name="language" id="language" required>
 
-            Borrow Management
 
-        </a>
+<option value="">
+    Select Language
+</option>
 
-        <a href="{{ url_for('books') }}" class="nav-btn">
+<option>
+    English
+</option>
 
-            Reader View
 
-        </a>
+<option>
+    Hindi
+</option>
 
-    </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+<option>
+    Odia
+</option>
 
-</body>
 
-</html>
+<option>
+    Bengali
+</option>
+
+
+<option>
+    Urdu
+</option>
+
+
+<option>
+    Tamil
+</option>
+
+
+<option>
+    Telugu
+</option>
+
+
+<option>
+    Malayalam
+</option>
+
+
+<option>
+    Kannada
+</option>
+
+
+<option>
+    Marathi
+</option>
+
+
+<option>
+    Gujarati
+</option>
+
+
+<option>
+    Punjabi
+</option>
+
+
+<option>
+    Other
+</option>
+
+</select>
+
+
+
+<label>Edition</label>
+<input type="text" name="edition" id="edition" placeholder="Example: 3rd Edition" required>
+
+
+
+
+
+
+
+
+<label>Total Copies</label>
+
+
+<input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
+
+
+
+<label>Purchase Price (₹)</label>
+
+
+<input type="number" name="purchase_price" id="purchase_price" min="0" step="0.01" required>
+
+
+
+<button id="save-btn" type="submit">
+
+Save Book
+
+</button>
+
+
+
+<button type="reset" onclick="resetBookForm()">
+
+Clear
+
+</button>
+
+
+
+</form>
+
+
+</div>
+
+
+
+<!-- BOOK TABLE -->
+<!-- BOOK TABLE -->
+
+
+<table class="category-table">
+
+
+<tr>
+
+<th>Date of Entry</th>
+
+<th>Book ID</th>
+
+<th>Book Name</th>
+
+<th>Author</th>
+
+<th>Category</th>
+
+<th>Language</th>
+
+<th>Edition</th>
+
+<th>Copies</th>
+
+<th>Price</th>
+
+<th>Publication</th>
+
+<th>Publication Date</th>
+
+<th>Edit</th>
+
+<th>Delete</th>
+
+
+</tr>
+
+
+
+
+{% if books %}
+
+
+
+
+{% for book in books %}
+
+
+<tr>
+
+
+
+<td>
+    {{ book[7] }}
+</td>
+
+
+
+<td>
+    {{ book[0] }}
+</td>
+
+
+
+
+<td>
+    {{ book[1] }}
+</td>
+
+
+
+
+<td>
+    {{ book[2] }}
+</td>
+
+
+
+
+<td>
+    {{ book[3] }}
+</td>
+
+
+<td>
+    {{ book[8] }}
+</td>
+
+
+
+
+
+<td>
+    {{ book[9] }}
+</td>
+
+
+
+
+
+<td>
+    {{ book[10] }}
+</td>
+
+
+
+
+
+<td>
+    ₹ {{ book[11] }}
+</td>
+
+<td>
+    {{ book[5] }}
+</td>
+
+
+<td>
+    {{ book[6] }}
+</td>
+
+
+
+
+
+<td>
+
+
+<button type="button" class="edit-btn" onclick="loadBook(
+
+'{{ book[0] }}',
+'{{ book[1] }}',
+'{{ book[2] }}',
+'{{ book[4] }}',
+'{{ book[5] }}',
+'{{ book[6] }}',
+'{{ book[7] }}',
+'{{ book[8] }}',
+'{{ book[9] }}',
+'{{ book[11] }}'
+
+)">
+
+
+Edit
+
+
+</button>
+
+
+</td>
+
+
+
+
+
+
+<td>
+
+
+<a href="{{ url_for('delete_book',book_id=book[0]) }}" class="delete-btn" onclick="return confirm('Delete this book?')">
+
+
+Delete
+
+
+</a>
+
+
+
+</td>
+
+
+
+
+</tr>
+
+
+
+
+
+{% endfor %}
+
+
+
+
+
+{% else %}
+
+
+
+
+<tr>
+
+<td colspan="13">
+
+
+No Books Found
+
+
+</td>
+
+
+</tr>
+
+
+
+
+
+{% endif %}
+
+
+
+
+
+</table>
