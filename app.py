@@ -207,7 +207,6 @@ def update_book():
     entry_date = request.form["entry_date"]
     language = request.form["language"].strip().title()
     edition = request.form["edition"].strip()
-    total_copies = request.form["total_copies"]
     purchase_price = request.form["purchase_price"]
 
     if (
@@ -219,7 +218,6 @@ def update_book():
         not entry_date or
         not language or
         not edition or
-        not total_copies or
         not purchase_price
     ):
 
@@ -237,7 +235,6 @@ def update_book():
             EntryDate=%s,
             Language=%s,
             Edition=%s,
-            TotalCopies=%s,
             PurchasePrice=%s
         WHERE BookID=%s
     """, (
@@ -249,7 +246,6 @@ def update_book():
         entry_date,
         language,
         edition,
-        total_copies,
         purchase_price,
         book_id
     ))
