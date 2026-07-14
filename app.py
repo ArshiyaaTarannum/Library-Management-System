@@ -303,8 +303,6 @@ def add_books():
         ON Book.BookID = BookCopy.BookID
 
         WHERE 1=1
-
-        GROUP BY Book.BookID
     """
 
     values = []
@@ -328,7 +326,19 @@ def add_books():
 
         values.append("%" + search + "%")
 
-    query += " ORDER BY Book.BookID"
+    query += """
+    GROUP BY 
+        Book.BookID,
+        Book.BookName,
+        Book.Author,
+        Category.CategoryName,
+        Book.CategoryID,
+        Book.Publication,
+        Book.PublicationDate,
+        Book.EntryDate
+
+    ORDER BY Book.BookID
+    """
 
     cur.execute(query, values)
 
