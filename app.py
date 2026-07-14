@@ -254,7 +254,120 @@ def update_book():
     flash("Book Updated Successfully!")
 
     return redirect(url_for("add_books"))
+# ADD BOOK PAGE
 
+@app.route("/add_books")
+def add_books():
+
+    search = request.args.get("search", "").strip()
+    search_by = request.args.get("search_by", "")
+
+    cur.execute("""
+        SELECT CategoryID, CategoryName
+        FROM Category
+        ORDER BY CategoryName
+    """)
+
+    categories = cur.fetchall()
+
+    # Generate next Book ID
+
+    cur.execute("""
+        SELECT BookID
+        FROM Book
+        ORDER BY BookID DESC
+        LIMIT 1
+    """)
+
+    last_book = cur.fetchone()
+
+
+    if last_book is None:
+
+        next_book_id = "LIB0001"
+
+    else:
+
+        number = int(last_book[0][3:]) + 1
+        next_book_id = f"LIB{number:04d}"
+
+
+    query = """
+        SELECT
+            Book.BookID,
+            Book.BookName,
+            Book.Author,
+            Category.CategoryName,
+            Book.CategoryID,
+            Book.Publication,
+            Book.PublicationDate,
+            Book.EntryDate,
+            COUNT(BookCopy.CopyID)
+
+        FROM Book
+
+        JOIN Category
+        ON Book.CategoryID = Category.CategoryID
+
+        LEFT JOIN BookCopy
+        ON Book.BookID = BookCopy.BookID
+
+        WHERE 1=1
+    """
+
+
+    values = []
+
+
+    if search:
+
+        if search_by == "book_id":
+            query += " AND Book.BookID LIKE %s"
+
+        elif search_by == "author":
+            query += " AND Book.Author LIKE %s"
+
+        elif search_by == "publication":
+            query += " AND Book.Publication LIKE %s"
+
+        elif search_by == "category":
+            query += " AND Category.CategoryName LIKE %s"
+
+        else:
+            query += " AND Book.BookName LIKE %s"
+
+
+        values.append("%" + search + "%")
+
+
+    query += """
+        GROUP BY
+        Book.BookID,
+        Book.BookName,
+        Book.Author,
+        Category.CategoryName,
+        Book.CategoryID,
+        Book.Publication,
+        Book.PublicationDate,
+        Book.EntryDate
+
+        ORDER BY Book.BookID
+    """
+
+
+    cur.execute(query, values)
+
+    books = cur.fetchall()
+
+
+    return render_template(
+        "add_books.html",
+        categories=categories,
+        next_book_id=next_book_id,
+        books=books,
+        today=date.today().isoformat(),
+        total_books=len(books)
+    )
 
 @app.route("/add_book", methods=["POST"])
 def add_book():
