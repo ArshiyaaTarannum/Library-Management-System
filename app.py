@@ -148,7 +148,7 @@ def delete_category(category_id):
 
     return redirect(url_for("category"))
 
-#- DELETE BOOK 
+# DELETE BOOK
 
 
 @app.route("/delete_book/<book_id>")
@@ -170,7 +170,6 @@ def delete_book(book_id):
         flash("Unable to delete the book.")
 
     return redirect(url_for("add_books"))
-
 
 @app.route("/update_category", methods=["POST"])
 def update_category():
@@ -206,6 +205,10 @@ def update_book():
     publication = request.form["publication"].strip().title()
     publication_date = request.form["publication_date"]
     entry_date = request.form["entry_date"]
+    language = request.form["language"].strip().title()
+    edition = request.form["edition"].strip()
+    total_copies = request.form["total_copies"]
+    purchase_price = request.form["purchase_price"]
 
     if (
         not book_name or
@@ -213,7 +216,11 @@ def update_book():
         not category_id or
         not publication or
         not publication_date or
-        not entry_date
+        not entry_date or
+        not language or
+        not edition or
+        not total_copies or
+        not purchase_price
     ):
 
         flash("Please fill all fields.")
@@ -227,7 +234,11 @@ def update_book():
             CategoryID=%s,
             Publication=%s,
             PublicationDate=%s,
-            EntryDate=%s
+            EntryDate=%s,
+            Language=%s,
+            Edition=%s,
+            TotalCopies=%s,
+            PurchasePrice=%s
         WHERE BookID=%s
     """, (
         book_name,
@@ -236,9 +247,12 @@ def update_book():
         publication,
         publication_date,
         entry_date,
+        language,
+        edition,
+        total_copies,
+        purchase_price,
         book_id
     ))
-
     conn.commit()
 
     flash("Book Updated Successfully!")
@@ -340,7 +354,11 @@ def books():
             Category.CategoryName,
             Book.Publication,
             Book.PublicationDate,
-            Book.EntryDate
+            Book.EntryDate,
+            Book.Language,
+            Book.Edition,
+            Book.TotalCopies,
+            Book.PurchasePrice
         FROM Book
         JOIN Category
         ON Book.CategoryID = Category.CategoryID
@@ -388,6 +406,11 @@ def add_book():
     publication = request.form["publication"].strip().title()
     publication_date = request.form["publication_date"]
     entry_date = request.form["entry_date"]
+    language = request.form["language"].strip().title()
+    edition = request.form["edition"].strip()
+    total_copies = int(request.form["total_copies"])
+    purchase_price = request.form["purchase_price"]
+
 
     if (
         not book_name or
@@ -395,27 +418,36 @@ def add_book():
         not category_id or
         not publication or
         not publication_date or
-        not entry_date
+        not language or
+        not edition
     ):
-        flash("Please fill all fields.")
+
+        flash("Please fill all required fields.")
         return redirect(url_for("add_books"))
 
-    cur.execute("""
-        SELECT BookID
-        FROM Book
-        ORDER BY BookID DESC
-        LIMIT 1
-    """)
-
-    last_book = cur.fetchone()
-
-    if last_book is None:
-        book_id = "LIB0001"
-    else:
-        number = int(last_book[0][3:]) + 1
-        book_id = f"LIB{number:04d}"
-
     try:
+
+        # Generate Book ID
+
+        cur.execute("""
+            SELECT BookID
+            FROM Book
+            ORDER BY BookID DESC
+            LIMIT 1
+        """)
+
+        last_book = cur.fetchone()
+
+        if last_book is None:
+
+            book_id = "LIB0001"
+
+        else:
+
+            number = int(last_book[0][3:]) + 1
+            book_id = f"LIB{number:04d}"
+
+        # Insert Book
 
         cur.execute("""
             INSERT INTO Book
@@ -426,38 +458,97 @@ def add_book():
                 CategoryID,
                 Publication,
                 PublicationDate,
-                EntryDate
+                EntryDate,
+                Language,
+                Edition,
+                PurchasePrice
             )
+
             VALUES
             (
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s
             )
-        """, (
+
+        """,
+                    (
             book_id,
             book_name,
             author,
             category_id,
             publication,
             publication_date,
-            entry_date
-        ))
+                        entry_date,
+                        language,
+                        edition,
+                        purchase_price
+                    ))
+
+        # Generate Copies
+
+        for i in range(1, total_copies+1):
+
+            cur.execute("""
+                SELECT CopyID
+                FROM BookCopy
+                ORDER BY CopyID DESC
+                LIMIT 1
+            """)
+
+            last_copy = cur.fetchone()
+
+            if last_copy is None:
+
+                copy_id = "CP000001"
+
+            else:
+
+                number = int(last_copy[0][2:])+1
+
+                copy_id = f"CP{number:06d}"
+
+            cur.execute("""
+                INSERT INTO BookCopy
+                (
+                    CopyID,
+                    BookID,
+                    Shelf,
+                    Status,
+                    ConditionRemark,
+                    DateAdded
+                )
+
+                VALUES
+                (
+                    %s,%s,%s,%s,%s,%s
+                )
+
+            """,
+                        (
+                            copy_id,
+                            book_id,
+                            "Unassigned",
+                            "Available",
+                            "Excellent",
+                            entry_date
+                        ))
+
 
         conn.commit()
 
-        flash("Book Added Successfully!")
+        flash(
+            f"Book Added Successfully with {total_copies} copies!"
+        )
 
     except mysql.connector.Error as e:
 
+        conn.rollback()
+
         print(e)
+
         flash("Unable to add book.")
 
     return redirect(url_for("add_books"))
+
 
 @app.route("/view_categories")
 def view_categories():
@@ -496,211 +587,7 @@ def view_categories():
     )
 
 
-@app.route("/borrow_books")
-def borrow_books():
 
-    search = request.args.get("search", "").strip()
-    search_by = request.args.get("search_by", "")
-
-    #  Available Books
-
-    cur.execute("""
-        SELECT BookID, BookName
-        FROM Book
-        WHERE Status='Available'
-        ORDER BY BookName
-    """)
-
-    books = cur.fetchall()
-
-    #  Generate Next Issue ID
-
-    cur.execute("""
-        SELECT IssueID
-        FROM BorrowBook
-        ORDER BY IssueID DESC
-        LIMIT 1
-    """)
-
-    last_issue = cur.fetchone()
-
-    if last_issue is None:
-        next_issue_id = "ISS001"
-    else:
-        number = int(last_issue[0][3:]) + 1
-        next_issue_id = f"ISS{number:03d}"
-
-    #  Borrow Records
-
-    query = """
-        SELECT
-            BorrowBook.IssueID,
-            BorrowBook.BookID,
-            Book.BookName,
-            BorrowBook.StudentName,
-            BorrowBook.StudentID,
-            BorrowBook.IssueDate,
-            BorrowBook.DueDate,
-            BorrowBook.ReturnDate,
-            BorrowBook.EntryDate,
-            BorrowBook.Status
-        FROM BorrowBook
-        JOIN Book
-        ON BorrowBook.BookID = Book.BookID
-        WHERE 1=1
-    """
-
-    values = []
-
-    if search:
-
-        if search_by == "issue_id":
-            query += " AND BorrowBook.IssueID LIKE %s"
-
-        elif search_by == "student_name":
-            query += " AND BorrowBook.StudentName LIKE %s"
-
-        elif search_by == "student_id":
-            query += " AND BorrowBook.StudentID LIKE %s"
-
-        elif search_by == "book":
-            query += " AND Book.BookName LIKE %s"
-
-        else:
-            query += " AND BorrowBook.Status LIKE %s"
-
-        values.append("%" + search + "%")
-
-    query += " ORDER BY BorrowBook.IssueDate DESC"
-
-    cur.execute(query, values)
-
-    borrow_records = cur.fetchall()
-
-    today = date.today().isoformat()
-
-    return render_template(
-        "borrow_books.html",
-        books=books,
-        borrow_records=borrow_records,
-        next_issue_id=next_issue_id,
-        today=today
-    )
-
-
-@app.route("/borrow_book", methods=["POST"])
-def borrow_book():
-
-    issue_id = request.form["issue_id"]
-    book_id = request.form["book_id"]
-    student_name = request.form["student_name"].strip().title()
-    student_id = request.form["student_id"].strip().upper()
-    issue_date = request.form["issue_date"]
-    due_date = request.form["due_date"]
-    return_date = request.form["return_date"] or None
-    entry_date = request.form["entry_date"]
-    status = request.form["status"]
-
-    try:
-
-        cur.execute("""
-            INSERT INTO BorrowBook(
-                IssueID,
-                BookID,
-                StudentName,
-                StudentID,
-                IssueDate,
-                DueDate,
-                ReturnDate,
-                EntryDate,
-                Status
-            )
-            VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            issue_id,
-            book_id,
-            student_name,
-            student_id,
-            issue_date,
-            due_date,
-            return_date,
-            entry_date,
-            status
-        ))
-
-        cur.execute("""
-            UPDATE Book
-            SET Status='Issued'
-            WHERE BookID=%s
-        """, (book_id,))
-
-        conn.commit()
-
-        flash("Book Issued Successfully!")
-
-    except mysql.connector.Error:
-
-        flash("Unable to issue book.")
-
-    return redirect(url_for("borrow_books"))
-
-
-@app.route("/delete_borrow/<issue_id>")
-def delete_borrow(issue_id):
-
-    cur.execute("""
-        SELECT BookID
-        FROM BorrowBook
-        WHERE IssueID=%s
-    """, (issue_id,))
-
-    book = cur.fetchone()
-
-    if book:
-
-        cur.execute("""
-            UPDATE Book
-            SET Status='Available'
-            WHERE BookID=%s
-        """, (book[0],))
-
-        cur.execute("""
-            DELETE FROM BorrowBook
-            WHERE IssueID=%s
-        """, (issue_id,))
-
-        conn.commit()
-
-        flash("Borrow Record Deleted Successfully!")
-
-    return redirect(url_for("borrow_books"))
-
-
-@app.route("/borrow_history")
-def borrow_history():
-
-    cur.execute("""
-        SELECT
-            BorrowBook.IssueID,
-            Book.BookName,
-            BorrowBook.StudentName,
-            BorrowBook.StudentID,
-            BorrowBook.IssueDate,
-            BorrowBook.DueDate,
-            BorrowBook.ReturnDate,
-            BorrowBook.Status
-        FROM BorrowBook
-        JOIN Book
-        ON BorrowBook.BookID = Book.BookID
-        ORDER BY BorrowBook.IssueDate DESC
-    """)
-
-    records = cur.fetchall()
-
-    return render_template(
-        "borrow_history.html",
-        records=records
-    )
 # ---------------- RUN FLASK ----------------
 
 
