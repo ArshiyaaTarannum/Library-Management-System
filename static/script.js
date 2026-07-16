@@ -129,14 +129,13 @@ function resetBookForm() {
 //
 // Handles Step 2 of the Add Book form: after Total Copies is entered,
 // the librarian is asked whether every copy shares the same condition.
-//   - Yes -> one common Shelf/Status/Condition/Remark applied to all copies.
+//   - Yes -> one common Shelf/Condition/Remark applied to all copies.
 //   - No  -> repeatable grouped blocks, validated to sum exactly to
 //            Total Copies before the form can be submitted.
 // The same mechanism serves both small (<=25) and large (>25) batches;
 // past 25 copies a hint simply recommends grouping, nothing else changes.
 
-// Must stay in sync with VALID_STATUSES / VALID_CONDITIONS in app.py.
-const STATUS_OPTIONS = ["Available", "Issued", "Damaged", "Lost"];
+// Must stay in sync with VALID_CONDITIONS in app.py.
 const CONDITION_OPTIONS = ["Excellent", "Good", "Fair", "Worn", "Damaged", "Other"];
 
 function buildOptionsHTML(values, placeholder) {
@@ -184,11 +183,15 @@ function createGroupRow() {
         <label>Shelf</label>
         <input type="text" class="group-shelf" placeholder="e.g. A2">
 
-        <label>Status</label>
-        <select class="group-status">${buildOptionsHTML(STATUS_OPTIONS, "Select Status")}</select>
-
         <label>Condition</label>
-        <select class="group-condition">${buildOptionsHTML(CONDITION_OPTIONS, "Select Condition")}</select>
+        <select class="group-condition">
+            <option value="Excellent" selected>Excellent</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Worn">Worn</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Other">Other</option>
+        </select>
 
         <label>Additional Remark (optional)</label>
         <input type="text" class="group-remark" placeholder="e.g. Slightly worn">
@@ -310,10 +313,16 @@ function initAddBookWorkflow() {
 
     // Populate the common-form dropdowns once, from the same option
     // lists used to build every dynamically created group row.
-    const commonStatus = document.getElementById("common_status");
+
     const commonCondition = document.getElementById("common_condition");
-    commonStatus.innerHTML = buildOptionsHTML(STATUS_OPTIONS, "Select Status");
-    commonCondition.innerHTML = buildOptionsHTML(CONDITION_OPTIONS, "Select Condition");
+    commonCondition.innerHTML = `
+    <option value="Excellent" selected>Excellent</option>
+    <option value="Good">Good</option>
+    <option value="Fair">Fair</option>
+    <option value="Worn">Worn</option>
+    <option value="Damaged">Damaged</option>
+    <option value="Other">Other</option>
+    `;
 
     totalCopiesInput.addEventListener("input", function () {
         refreshLargeBatchHint();
@@ -371,20 +380,19 @@ function initAddBookWorkflow() {
         if (sameYes.checked) {
 
             const shelf = document.getElementById("common_shelf").value.trim();
-            const status = document.getElementById("common_status").value;
             const condition = document.getElementById("common_condition").value;
             const remark = document.getElementById("common_remark").value.trim();
 
-            if (!shelf || !status || !condition) {
+            if (!shelf || !condition) {
                 e.preventDefault();
-                alert("Please fill Shelf, Status and Condition.");
+                alert("Please fill Shelf and Condition section.");
                 return;
             }
 
             groups = [{
                 quantity: total,
                 shelf: shelf,
-                status: status,
+                status: "Available",
                 condition: condition,
                 remark: remark
             }];
@@ -404,20 +412,19 @@ function initAddBookWorkflow() {
 
                 const quantity = parseInt(row.querySelector(".group-quantity").value, 10) || 0;
                 const shelf = row.querySelector(".group-shelf").value.trim();
-                const status = row.querySelector(".group-status").value;
                 const condition = row.querySelector(".group-condition").value;
                 const remark = row.querySelector(".group-remark").value.trim();
 
-                if (quantity < 1 || !shelf || !status || !condition) {
+                if (quantity < 1 || !shelf || !condition) {
                     e.preventDefault();
-                    alert("Every group needs a valid Number of Copies, Shelf, Status and Condition.");
+                    alert("Every group needs a valid Number of Copies, Shelf and Condition.");
                     return;
                 }
 
                 groups.push({
                     quantity: quantity,
                     shelf: shelf,
-                    status: status,
+                    status: "Available",
                     condition: condition,
                     remark: remark
                 });
@@ -495,8 +502,6 @@ function loadBorrow(
     document.getElementById("return_date").value = returnDate || "";
 
     document.getElementById("entry_date").value = entryDate;
-
-    document.getElementById("status").value = status;
 
     document.getElementById("borrow-form").action = "/update_borrow";
 
