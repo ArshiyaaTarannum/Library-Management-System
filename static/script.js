@@ -84,6 +84,12 @@ function loadBook(
     document.getElementById("purchase_price").value = purchasePrice;
 
 
+    // Editing a Book's details never creates or changes BookCopy records,
+    // so the Total Copies field and the whole copy-allocation workflow
+    // are hidden while editing (see the "add-only" elements in
+    // add_books.html and setAddOnlyVisible() below).
+    setAddOnlyVisible(false);
+
 
     document.getElementById("book-form").action = "/update_book";
 
@@ -105,10 +111,332 @@ function resetBookForm() {
 
     document.getElementById("entry_date").value =
         new Date().toISOString().split("T")[0];
-    document.getElementById("display_book_id").value = "";
-    document.getElementById("display_book_id").value = "{{ next_book_id }}";
+
+    // static/script.js is never passed through Jinja, so the next Book ID
+    // has to come from the data-next-id attribute the template already
+    // renders onto this field, not from "{{ next_book_id }}" written here.
+    const displayBookId = document.getElementById("display_book_id");
+    displayBookId.value = displayBookId.dataset.nextId;
+
+    // Back to "Add" mode: bring back Total Copies + the allocation workflow,
+    // and clear out whatever groups/selection were previously built.
+    setAddOnlyVisible(true);
+    resetCopyAllocationUI();
 
 }
+
+// ================= ADD BOOK: COPY ALLOCATION WORKFLOW =================
+//
+// Handles Step 2 of the Add Book form: after Total Copies is entered,
+// the librarian is asked whether every copy shares the same condition.
+//   - Yes -> one common Shelf/Status/Condition/Remark applied to all copies.
+//   - No  -> repeatable grouped blocks, validated to sum exactly to
+//            Total Copies before the form can be submitted.
+// The same mechanism serves both small (<=25) and large (>25) batches;
+// past 25 copies a hint simply recommends grouping, nothing else changes.
+
+// Must stay in sync with VALID_STATUSES / VALID_CONDITIONS in app.py.
+const STATUS_OPTIONS = ["Available", "Issued", "Damaged", "Lost"];
+const CONDITION_OPTIONS = ["Excellent", "Good", "Fair", "Worn", "Damaged", "Other"];
+
+function buildOptionsHTML(values, placeholder) {
+
+    let html = `<option value="">${placeholder}</option>`;
+
+    values.forEach(function (value) {
+        html += `<option value="${value}">${value}</option>`;
+    });
+
+    return html;
+}
+
+function setAddOnlyVisible(visible) {
+
+    document.querySelectorAll(".add-only").forEach(function (el) {
+        el.style.display = visible ? "" : "none";
+    });
+
+    const totalCopiesInput = document.getElementById("total_copies");
+
+    if (totalCopiesInput) {
+        totalCopiesInput.required = visible;
+    }
+}
+
+let groupCounter = 0;
+
+function createGroupRow() {
+
+    groupCounter += 1;
+
+    const row = document.createElement("div");
+    row.className = "copy-group";
+
+    row.innerHTML = `
+        <div class="copy-group-header">
+            <span>Group ${groupCounter}</span>
+            <button type="button" class="remove-group-btn delete-btn">Remove</button>
+        </div>
+
+        <label>Number of Copies</label>
+        <input type="number" class="group-quantity" min="1" value="1">
+
+        <label>Shelf</label>
+        <input type="text" class="group-shelf" placeholder="e.g. A2">
+
+        <label>Status</label>
+        <select class="group-status">${buildOptionsHTML(STATUS_OPTIONS, "Select Status")}</select>
+
+        <label>Condition</label>
+        <select class="group-condition">${buildOptionsHTML(CONDITION_OPTIONS, "Select Condition")}</select>
+
+        <label>Additional Remark (optional)</label>
+        <input type="text" class="group-remark" placeholder="e.g. Slightly worn">
+    `;
+
+    row.querySelector(".remove-group-btn").addEventListener(
+        "click",
+        function () {
+            row.remove();
+            updateAllocationSummary();
+        }
+    );
+
+    return row;
+}
+
+function updateAllocationSummary() {
+
+    const totalCopiesInput = document.getElementById("total_copies");
+    const groupList = document.getElementById("group-list");
+    const allocatedCountEl = document.getElementById("allocated-count");
+    const totalCountEl = document.getElementById("total-count");
+    const allocationError = document.getElementById("allocation-error");
+
+    const total = parseInt(totalCopiesInput.value, 10) || 0;
+    totalCountEl.textContent = total;
+
+    let allocated = 0;
+
+    groupList.querySelectorAll(".group-quantity").forEach(function (input) {
+        allocated += parseInt(input.value, 10) || 0;
+    });
+
+    allocatedCountEl.textContent = allocated;
+
+    if (allocated === total && total > 0) {
+
+        allocatedCountEl.style.color = "#198754";
+        allocationError.style.display = "none";
+
+    } else {
+
+        allocatedCountEl.style.color = "#dc3545";
+
+        if (allocated > total) {
+            allocationError.textContent =
+                `Allocated copies (${allocated}) exceed Total Copies (${total}).`;
+        } else {
+            allocationError.textContent =
+                `Allocated copies (${allocated}) are less than Total Copies (${total}).`;
+        }
+
+        allocationError.style.display = "block";
+    }
+}
+
+function isAllocationValid() {
+
+    const totalCopiesInput = document.getElementById("total_copies");
+    const groupList = document.getElementById("group-list");
+
+    const total = parseInt(totalCopiesInput.value, 10) || 0;
+
+    let allocated = 0;
+
+    groupList.querySelectorAll(".group-quantity").forEach(function (input) {
+        allocated += parseInt(input.value, 10) || 0;
+    });
+
+    return total > 0 && allocated === total;
+}
+
+function resetCopyAllocationUI() {
+
+    const sameYes = document.getElementById("same_condition_yes");
+    const sameNo = document.getElementById("same_condition_no");
+    const commonForm = document.getElementById("common-form");
+    const groupedForm = document.getElementById("grouped-form");
+    const groupList = document.getElementById("group-list");
+
+    if (!sameYes) return;
+
+    sameYes.checked = false;
+    sameNo.checked = false;
+    commonForm.style.display = "none";
+    groupedForm.style.display = "none";
+    groupList.innerHTML = "";
+    groupCounter = 0;
+
+    updateAllocationSummary();
+    refreshLargeBatchHint();
+}
+
+function refreshLargeBatchHint() {
+
+    const totalCopiesInput = document.getElementById("total_copies");
+    const largeBatchHint = document.getElementById("large-batch-hint");
+
+    if (!totalCopiesInput || !largeBatchHint) return;
+
+    const total = parseInt(totalCopiesInput.value, 10) || 0;
+    largeBatchHint.style.display = total > 25 ? "block" : "none";
+}
+
+function initAddBookWorkflow() {
+
+    const bookForm = document.getElementById("book-form");
+    const totalCopiesInput = document.getElementById("total_copies");
+
+    if (!bookForm || !totalCopiesInput) return;
+
+    const sameYes = document.getElementById("same_condition_yes");
+    const sameNo = document.getElementById("same_condition_no");
+    const commonForm = document.getElementById("common-form");
+    const groupedForm = document.getElementById("grouped-form");
+    const groupList = document.getElementById("group-list");
+    const addGroupBtn = document.getElementById("add-group-btn");
+    const copyGroupsField = document.getElementById("copy_groups");
+
+    // Populate the common-form dropdowns once, from the same option
+    // lists used to build every dynamically created group row.
+    const commonStatus = document.getElementById("common_status");
+    const commonCondition = document.getElementById("common_condition");
+    commonStatus.innerHTML = buildOptionsHTML(STATUS_OPTIONS, "Select Status");
+    commonCondition.innerHTML = buildOptionsHTML(CONDITION_OPTIONS, "Select Condition");
+
+    totalCopiesInput.addEventListener("input", function () {
+        refreshLargeBatchHint();
+        resetCopyAllocationUI();
+    });
+
+    sameYes.addEventListener("change", function () {
+        commonForm.style.display = "block";
+        groupedForm.style.display = "none";
+    });
+
+    sameNo.addEventListener("change", function () {
+
+        commonForm.style.display = "none";
+        groupedForm.style.display = "block";
+
+        if (groupList.children.length === 0) {
+            groupList.appendChild(createGroupRow());
+        }
+
+        updateAllocationSummary();
+    });
+
+    addGroupBtn.addEventListener("click", function () {
+        groupList.appendChild(createGroupRow());
+        updateAllocationSummary();
+    });
+
+    // Event delegation: catches quantity changes on every group row,
+    // including ones added later, without re-binding listeners each time.
+    groupList.addEventListener("input", function (e) {
+        if (e.target.classList.contains("group-quantity")) {
+            updateAllocationSummary();
+        }
+    });
+
+    bookForm.addEventListener("submit", function (e) {
+
+        // Editing an existing book never touches BookCopy records -
+        // let it submit as a normal Book update.
+        if (bookForm.action.indexOf("/update_book") !== -1) {
+            return;
+        }
+
+        const total = parseInt(totalCopiesInput.value, 10) || 0;
+
+        if (total < 1) {
+            e.preventDefault();
+            alert("Please enter a valid number of Total Copies.");
+            return;
+        }
+
+        let groups = [];
+
+        if (sameYes.checked) {
+
+            const shelf = document.getElementById("common_shelf").value.trim();
+            const status = document.getElementById("common_status").value;
+            const condition = document.getElementById("common_condition").value;
+            const remark = document.getElementById("common_remark").value.trim();
+
+            if (!shelf || !status || !condition) {
+                e.preventDefault();
+                alert("Please fill Shelf, Status and Condition.");
+                return;
+            }
+
+            groups = [{
+                quantity: total,
+                shelf: shelf,
+                status: status,
+                condition: condition,
+                remark: remark
+            }];
+
+        } else if (sameNo.checked) {
+
+            if (!isAllocationValid()) {
+                e.preventDefault();
+                updateAllocationSummary();
+                alert("Allocated copies must exactly equal Total Copies before saving.");
+                return;
+            }
+
+            const rows = groupList.querySelectorAll(".copy-group");
+
+            for (const row of rows) {
+
+                const quantity = parseInt(row.querySelector(".group-quantity").value, 10) || 0;
+                const shelf = row.querySelector(".group-shelf").value.trim();
+                const status = row.querySelector(".group-status").value;
+                const condition = row.querySelector(".group-condition").value;
+                const remark = row.querySelector(".group-remark").value.trim();
+
+                if (quantity < 1 || !shelf || !status || !condition) {
+                    e.preventDefault();
+                    alert("Every group needs a valid Number of Copies, Shelf, Status and Condition.");
+                    return;
+                }
+
+                groups.push({
+                    quantity: quantity,
+                    shelf: shelf,
+                    status: status,
+                    condition: condition,
+                    remark: remark
+                });
+            }
+
+        } else {
+
+            e.preventDefault();
+            alert("Please select whether all copies have the same condition.");
+            return;
+        }
+
+        copyGroupsField.value = JSON.stringify(groups);
+    });
+
+    refreshLargeBatchHint();
+}
+
+document.addEventListener("DOMContentLoaded", initAddBookWorkflow);
 
 // ================= CATEGORY =================
 
