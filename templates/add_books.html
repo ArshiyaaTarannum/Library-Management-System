@@ -147,6 +147,7 @@
         <form id="book-form" action="{{ url_for('add_book') }}" method="POST" autocomplete="off">
 
             <input type="hidden" name="book_id" id="book_id">
+            <input type="hidden" name="copy_groups" id="copy_groups">
 
             <label>Date of Entry</label>
 
@@ -208,7 +209,6 @@
 
 
             <label>Publication Date</label>
-
 
             <input type="date" name="publication_date" id="publication_date" required>
 
@@ -296,24 +296,83 @@
             <input type="text" name="edition" id="edition" placeholder="Example: 3rd Edition" required>
 
 
-
-
-
-
-
-
-            <label>Total Copies</label>
-
-
-            <input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
-
-
-
             <label>Purchase Price (₹)</label>
-
-
+            
             <input type="number" name="purchase_price" id="purchase_price" min="0" step="0.01" required>
+            
+            
+            <!-- ===================== ADD-ONLY SECTION ===================== -->
+            <!-- Everything below only applies when adding NEW copies. It is  -->
+            <!-- hidden automatically in Edit mode via the "add-only" class,  -->
+            <!-- since editing a Book's details never creates/changes copies. -->
+            
+            <div class="add-only">
+            
+                <label>Total Copies</label>
+            
+                <input type="number" name="total_copies" id="total_copies" min="1" value="1" required>
+            
+            </div>
+            
+            <div class="add-only allocation-block" id="allocation-question">
 
+                <label>Do all copies have the same condition?</label>
+
+                <div class="radio-group">
+
+                    <label class="radio-inline">
+                        <input type="radio" name="same_condition" id="same_condition_yes" value="yes">
+                        Yes
+                    </label>
+
+                    <label class="radio-inline">
+                        <input type="radio" name="same_condition" id="same_condition_no" value="no">
+                        No
+                    </label>
+
+                </div>
+                
+                <p id="large-batch-hint" class="hint-text" style="display:none;">
+                    Large batch detected — grouping copies by condition is recommended for accurate shelving.
+                </p>
+                
+                </div>
+
+            <!-- CASE A / C (Yes): one common form applied to every copy -->
+            <div class="add-only allocation-block" id="common-form" style="display:none;">
+            
+                <label>Shelf</label>
+                <input type="text" id="common_shelf" placeholder="e.g. A1">
+            
+                <label>Status</label>
+                <select id="common_status"></select>
+            
+                <label>Condition</label>
+                <select id="common_condition"></select>
+
+                <label>Additional Remark (optional)</label>
+                <input type="text" id="common_remark" placeholder="e.g. Brand new">
+
+            </div>
+
+            <!-- CASE B / C (No): grouped, repeatable allocation blocks -->
+            <div class="add-only allocation-block" id="grouped-form" style="display:none;">
+
+                <div id="group-list"></div>
+
+                <button type="button" id="add-group-btn" class="add-group-btn">
+                    + Add Group
+                </button>
+
+                <div class="allocation-summary">
+                    Allocated Copies: <span id="allocated-count">0</span> / <span id="total-count">0</span>
+                </div>
+
+                <p id="allocation-error" class="error-text" style="display:none;"></p>
+                
+                </div>
+
+            <!-- =================== END ADD-ONLY SECTION =================== -->
 
 
             <button id="save-btn" type="submit">
@@ -464,7 +523,6 @@
 
 
 
-
             <td>
 
 
@@ -526,9 +584,7 @@
 
 
 
-
         {% else %}
-
 
 
 
@@ -542,15 +598,12 @@
 
             </td>
 
-
         </tr>
 
 
 
 
-
         {% endif %}
-
 
 
 
