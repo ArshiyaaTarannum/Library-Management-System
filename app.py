@@ -9,15 +9,10 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 
-# Allowed values for BookCopy.Status / BookCopy.Condition.
-# These must stay in sync with the STATUS_OPTIONS / CONDITION_OPTIONS
-# arrays in static/script.js, which build the matching dropdowns.
 VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
 VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
 
-# Whitelisted sort columns for /inventory. The ORDER BY clause is built
-# from this fixed mapping only - never from the raw "sort" query param -
-# so a tampered URL can at worst fall back to the default sort.
+
 INVENTORY_SORT_COLUMNS = {
     "copy_id": "BookCopy.CopyID",
     "book_id": "BookCopy.BookID",
@@ -407,7 +402,12 @@ def add_book():
     entry_date = request.form["entry_date"]
     language = request.form["language"].strip().title()
     edition = request.form["edition"].strip()
-    total_copies = int(request.form["total_copies"])
+    try:
+        total_copies = int(request.form["total_copies"])
+    except (ValueError, TypeError):
+        flash("Invalid Total Copies.")
+        return redirect(url_for("add_books"))
+
     purchase_price = request.form["purchase_price"]
     copy_groups_raw = request.form.get("copy_groups", "")
 
@@ -424,8 +424,6 @@ def add_book():
 
         flash("Please fill all required fields.")
         return redirect(url_for("add_books"))
-
-    # ---- Validate the copy allocation groups (never trust the client) ----
 
     try:
         copy_groups = json.loads(copy_groups_raw)
@@ -453,7 +451,7 @@ def add_book():
             return redirect(url_for("add_books"))
 
         shelf = str(group.get("shelf", "")).strip()
-        status = str(group.get("status", "")).strip()
+        status = "Available"
         condition = str(group.get("condition", "")).strip()
         remark = str(group.get("remark", "")).strip()
 
@@ -473,7 +471,8 @@ def add_book():
             flash("Every group needs a valid Condition.")
             return redirect(url_for("add_books"))
 
-        cleaned_groups.append((quantity, shelf, status, condition, remark))
+        cleaned_groups.append(
+            (quantity, shelf, "Available", condition, remark))
         allocated += quantity
 
     if allocated != total_copies:
@@ -540,12 +539,6 @@ def add_book():
                         edition,
                         purchase_price
                     ))
-
-        # Create Individual Book Copies from the allocation groups.
-        #
-        # CopyIDs are generated once as a sequential block (instead of
-        # re-querying MAX(CopyID) for every single copy) so adding a
-        # 200-copy batch takes one lookup instead of 200.
 
         cur.execute("""
             SELECT CopyID
@@ -692,10 +685,6 @@ def books():
 
 def build_inventory_sort_links(current_sort, current_dir):
 
-    # One URL per sortable column, toggling asc/desc on repeat clicks,
-    # while preserving whatever search/filter params are already in the
-    # URL. Keeps inventory.html's header links plain <a> tags - no JS
-    # needed for sorting.
 
     links = {}
 
@@ -731,8 +720,6 @@ def inventory():
     if sort_dir not in ("asc", "desc"):
         sort_dir = "asc"
 
-    # ---- Overall inventory statistics (always whole-library, never  ----
-    # ---- affected by the search box or filters below)               ----
 
     cur.execute("""
         SELECT COUNT(*)
@@ -780,7 +767,6 @@ def inventory():
 
     lost = cur.fetchone()[0]
 
-    # ---- Full copy-level inventory listing (search + filters + sort) ----
 
     query = """
         SELECT
@@ -825,10 +811,6 @@ def inventory():
             query += " AND Book.BookName LIKE %s"
 
         values.append("%" + search + "%")
-
-    # Filters are exact matches, validated against the same whitelists
-    # Add Book already uses - no second list of statuses/conditions to
-    # keep in sync.
 
     if status_filter in VALID_STATUSES:
         query += " AND BookCopy.Status = %s"
@@ -905,11 +887,66 @@ def view_categories():
     )
 
 
-@app.route("/borrow_books")
-def borrow_books():
+@app.route("/shelf")
+def shelf():
 
-    return render_template("borrow_books.html")
+    search = request.args.get("search", "").strip()
 
+    query = """
+        SELECT
+            ShelfID,
+            ShelfName,
+            Location,
+            Capacity,
+            Status
+        FROM Shelf
+        WHERE 1=1
+    """
+
+    values = []
+
+    if search:
+
+        query += """
+            AND (
+                ShelfID LIKE %s
+                OR ShelfName LIKE %s
+                OR Location LIKE %s
+            )
+        """
+
+        values.append("%" + search + "%")
+        values.append("%" + search + "%")
+        values.append("%" + search + "%")
+
+    query += " ORDER BY ShelfID"
+
+    cur.execute(query, values)
+
+    shelves = cur.fetchall()
+
+    # Generate next Shelf ID
+
+    cur.execute("""
+        SELECT ShelfID
+        FROM Shelf
+        ORDER BY ShelfID DESC
+        LIMIT 1
+    """)
+
+    last_shelf = cur.fetchone()
+
+    if last_shelf is None:
+        next_shelf_id = "SH001"
+    else:
+        number = int(last_shelf[0][2:]) + 1
+        next_shelf_id = f"SH{number:03d}"
+
+    return render_template(
+        "shelf.html",
+        shelves=shelves,
+        next_shelf_id=next_shelf_id
+    )
 
 # ---------------- RUN FLASK ----------------
 
