@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Library Inventory Overview</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Inventory Overview</h1>
+
+    <p class="subtitle">
+        A snapshot of the entire book collection and copy status across the library.
+    </p>
+
+    <div class="dashboard">
+
+        <div class="dashboard-card">
+            <h2>📚 Total Books</h2>
+            <p style="font-size:36px;font-weight:700;color:#198754;">
+                {{ total_books }}
+            </p>
+            <p>Distinct book titles in the catalogue.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>📦 Total Copies</h2>
+            <p style="font-size:36px;font-weight:700;color:#198754;">
+                {{ total_copies }}
+            </p>
+            <p>Individual physical copies across all titles.</p>
+        </div>
+
+    </div>
+
+    <div class="dashboard">
+
+        <div class="dashboard-card">
+            <h2>✅ Available</h2>
+            <p style="font-size:36px;font-weight:700;color:#198754;">
+                {{ available }}
+            </p>
+            <p>Copies currently on the shelf, ready to be issued.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>📖 Issued</h2>
+            <p style="font-size:36px;font-weight:700;color:#0d6efd;">
+                {{ issued }}
+            </p>
+            <p>Copies currently checked out to readers.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>⚠️ Damaged</h2>
+            <p style="font-size:36px;font-weight:700;color:#dc3545;">
+                {{ damaged }}
+            </p>
+            <p>Copies flagged as damaged.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>❌ Lost</h2>
+            <p style="font-size:36px;font-weight:700;color:#6c757d;">
+                {{ lost }}
+            </p>
+            <p>Copies marked as lost.</p>
+        </div>
+
+    </div>
+
+    <!-- SEARCH & FILTERS -->
+
+    <div class="top-search">
+
+        <button id="search-icon" class="search-icon">
+
+            🔍
+
+        </button>
+
+    </div>
+
+    <div id="search-box" class="search-box">
+
+        <form action="{{ url_for('inventory') }}" method="GET">
+
+            <select name="search_by">
+
+                <option value="book_name" {% if not search_by or search_by == 'book_name' %}selected{% endif %}>
+                    Book Name
+                </option>
+
+                <option value="copy_id" {% if search_by == 'copy_id' %}selected{% endif %}>
+                    Copy ID
+                </option>
+
+                <option value="book_id" {% if search_by == 'book_id' %}selected{% endif %}>
+                    Book ID
+                </option>
+
+                <option value="shelf" {% if search_by == 'shelf' %}selected{% endif %}>
+                    Shelf
+                </option>
+
+                <option value="status" {% if search_by == 'status' %}selected{% endif %}>
+                    Status
+                </option>
+
+            </select>
+
+            <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+
+            <div class="inventory-filters">
+
+                <select name="status_filter">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    {% for s in valid_statuses %}
+
+                    <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>
+                        {{ s }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <select name="condition_filter">
+
+                    <option value="">
+                        All Conditions
+                    </option>
+
+                    {% for c in valid_conditions %}
+
+                    <option value="{{ c }}" {% if condition_filter == c %}selected{% endif %}>
+                        {{ c }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+            <a href="{{ url_for('inventory') }}" class="clear-btn">
+
+                Clear
+
+            </a>
+
+        </form>
+
+    </div>
+
+    <p class="results-count">
+        Showing {{ showing_count }} of {{ total_copies }} total copies
+    </p>
+
+    <!-- INVENTORY TABLE -->
+
+    <table class="category-table">
+
+        <tr>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['copy_id'] }}">
+                    Copy ID {% if current_sort == 'copy_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['book_id'] }}">
+                    Book ID {% if current_sort == 'book_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['book_name'] }}">
+                    Book Name {% if current_sort == 'book_name' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['category'] }}">
+                    Category {% if current_sort == 'category' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['shelf'] }}">
+                    Shelf {% if current_sort == 'shelf' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['status'] }}">
+                    Status {% if current_sort == 'status' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['condition'] }}">
+                    Condition {% if current_sort == 'condition' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                Additional Remark
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['date_added'] }}">
+                    Date Added {% if current_sort == 'date_added' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+        </tr>
+
+
+        {% if copies %}
+
+
+        {% for copy in copies %}
+
+        <tr>
+
+            <td>
+                {{ copy[0] }}
+            </td>
+
+            <td>
+                {{ copy[1] }}
+            </td>
+
+            <td>
+                {{ copy[2] }}
+            </td>
+
+            <td>
+                {{ copy[3] }}
+            </td>
+
+            <td>
+                {{ copy[4] }}
+            </td>
+
+            <td>
+
+                {% if copy[5] == 'Available' %}
+                <span class="badge badge-available">Available</span>
+
+                {% elif copy[5] == 'Issued' %}
+                <span class="badge badge-issued">Issued</span>
+
+                {% elif copy[5] == 'Damaged' %}
+                <span class="badge badge-damaged">Damaged</span>
+
+                {% elif copy[5] == 'Lost' %}
+                <span class="badge badge-lost">Lost</span>
+
+                {% else %}
+                <span class="badge badge-default">{{ copy[5] }}</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if copy[6] == 'Excellent' %}
+                <span class="badge badge-excellent">Excellent</span>
+
+                {% elif copy[6] == 'Good' %}
+                <span class="badge badge-good">Good</span>
+
+                {% elif copy[6] == 'Fair' %}
+                <span class="badge badge-fair">Fair</span>
+
+                {% elif copy[6] == 'Worn' %}
+                <span class="badge badge-worn">Worn</span>
+
+                {% elif copy[6] == 'Damaged' %}
+                <span class="badge badge-damaged">Damaged</span>
+
+                {% else %}
+                <span class="badge badge-default">{{ copy[6] }}</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+                {{ copy[7] if copy[7] else "—" }}
+            </td>
+
+            <td>
+                {{ copy[8] }}
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+
+        {% else %}
+
+
+        <tr>
+
+            <td colspan="9">
+
+                No copies found.
+
+            </td>
+
+        </tr>
+
+
+        {% endif %}
+
+
+    </table>
+
+    <div class="navigation-buttons">
+
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('add_books') }}" class="nav-btn">
+            Book Management
+        </a>
+
+        <a href="{{ url_for('category') }}" class="nav-btn">
+            Category Management
+        </a>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>
