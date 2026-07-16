@@ -2,11 +2,32 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from datetime import date
 import mysql.connector
 from dotenv import load_dotenv
+import json
 import os
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
+
+# Allowed values for BookCopy.Status / BookCopy.Condition.
+# These must stay in sync with the STATUS_OPTIONS / CONDITION_OPTIONS
+# arrays in static/script.js, which build the matching dropdowns.
+VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
+VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
+
+# Whitelisted sort columns for /inventory. The ORDER BY clause is built
+# from this fixed mapping only - never from the raw "sort" query param -
+# so a tampered URL can at worst fall back to the default sort.
+INVENTORY_SORT_COLUMNS = {
+    "copy_id": "BookCopy.CopyID",
+    "book_id": "BookCopy.BookID",
+    "book_name": "Book.BookName",
+    "category": "Category.CategoryName",
+    "shelf": "BookCopy.Shelf",
+    "status": "BookCopy.Status",
+    "condition": "BookCopy.`Condition`",
+    "date_added": "BookCopy.DateAdded",
+}
 
 # DATABASE CONNECTION 
 
@@ -302,7 +323,10 @@ def add_books():
             Book.Publication,
             Book.PublicationDate,
             Book.EntryDate,
-            COUNT(BookCopy.CopyID)
+            Book.Language,
+            Book.Edition,
+            COUNT(BookCopy.CopyID),
+            Book.PurchasePrice
 
         FROM Book
 
@@ -349,7 +373,10 @@ def add_books():
         Book.CategoryID,
         Book.Publication,
         Book.PublicationDate,
-        Book.EntryDate
+        Book.EntryDate,
+        Book.Language,
+        Book.Edition,
+        Book.PurchasePrice
 
         ORDER BY Book.BookID
     """
@@ -382,6 +409,7 @@ def add_book():
     edition = request.form["edition"].strip()
     total_copies = int(request.form["total_copies"])
     purchase_price = request.form["purchase_price"]
+    copy_groups_raw = request.form.get("copy_groups", "")
 
     if (
         not book_name or
@@ -395,6 +423,64 @@ def add_book():
     ):
 
         flash("Please fill all required fields.")
+        return redirect(url_for("add_books"))
+
+    # ---- Validate the copy allocation groups (never trust the client) ----
+
+    try:
+        copy_groups = json.loads(copy_groups_raw)
+    except (json.JSONDecodeError, TypeError):
+        flash("Copy allocation data was missing or invalid. Please try again.")
+        return redirect(url_for("add_books"))
+
+    if not isinstance(copy_groups, list) or not copy_groups:
+        flash("Please provide at least one copy allocation group.")
+        return redirect(url_for("add_books"))
+
+    cleaned_groups = []
+    allocated = 0
+
+    for group in copy_groups:
+
+        if not isinstance(group, dict):
+            flash("Copy allocation data was malformed. Please try again.")
+            return redirect(url_for("add_books"))
+
+        try:
+            quantity = int(group.get("quantity", 0))
+        except (TypeError, ValueError):
+            flash("Every group needs a valid whole number of copies.")
+            return redirect(url_for("add_books"))
+
+        shelf = str(group.get("shelf", "")).strip()
+        status = str(group.get("status", "")).strip()
+        condition = str(group.get("condition", "")).strip()
+        remark = str(group.get("remark", "")).strip()
+
+        if quantity < 1:
+            flash("Every group must contain at least 1 copy.")
+            return redirect(url_for("add_books"))
+
+        if not shelf:
+            flash("Every group needs a Shelf.")
+            return redirect(url_for("add_books"))
+
+        if status not in VALID_STATUSES:
+            flash("Every group needs a valid Status.")
+            return redirect(url_for("add_books"))
+
+        if condition not in VALID_CONDITIONS:
+            flash("Every group needs a valid Condition.")
+            return redirect(url_for("add_books"))
+
+        cleaned_groups.append((quantity, shelf, status, condition, remark))
+        allocated += quantity
+
+    if allocated != total_copies:
+        flash(
+            f"Allocated copies ({allocated}) do not match "
+            f"Total Copies ({total_copies})."
+        )
         return redirect(url_for("add_books"))
 
     try:
@@ -455,54 +541,60 @@ def add_book():
                         purchase_price
                     ))
 
-        # Create Individual Book Copies
+        # Create Individual Book Copies from the allocation groups.
+        #
+        # CopyIDs are generated once as a sequential block (instead of
+        # re-querying MAX(CopyID) for every single copy) so adding a
+        # 200-copy batch takes one lookup instead of 200.
 
-        for i in range(total_copies):
+        cur.execute("""
+            SELECT CopyID
+            FROM BookCopy
+            ORDER BY CopyID DESC
+            LIMIT 1
+        """)
 
-            cur.execute("""
-                SELECT CopyID
-                FROM BookCopy
-                ORDER BY CopyID DESC
-                LIMIT 1
-            """)
+        last_copy = cur.fetchone()
+        next_copy_number = 1 if last_copy is None else int(
+            last_copy[0][2:]) + 1
 
-            last_copy = cur.fetchone()
+        copy_rows = []
 
-            if last_copy is None:
+        for quantity, shelf, status, condition, remark in cleaned_groups:
 
-                copy_id = "CP000001"
+            for _ in range(quantity):
 
-            else:
+                copy_id = f"CP{next_copy_number:06d}"
+                next_copy_number += 1
 
-                number = int(last_copy[0][2:]) + 1
-                copy_id = f"CP{number:06d}"
+                copy_rows.append((
+                    copy_id,
+                    book_id,
+                    shelf,
+                    status,
+                    condition,
+                    remark,
+                    entry_date
+                ))
 
-            cur.execute("""
-                INSERT INTO BookCopy
-                (
-                    CopyID,
-                    BookID,
-                    Shelf,
-                    Status,
-                    ConditionRemark,
-                    DateAdded
-                )
+        cur.executemany("""
+            INSERT INTO BookCopy
+            (
+                CopyID,
+                BookID,
+                Shelf,
+                Status,
+                `Condition`,
+                AdditionalRemark,
+                DateAdded
+            )
 
-                VALUES
-                (
-                    %s,%s,%s,%s,%s,%s
-                )
+            VALUES
+            (
+                %s,%s,%s,%s,%s,%s,%s
+            )
 
-            """,
-                        (
-                            copy_id,
-                            book_id,
-                            "Unassigned",
-                            "Available",
-                            "Excellent",
-                            entry_date
-                        ))
-
+        """, copy_rows)
 
         conn.commit()
 
@@ -598,9 +690,49 @@ def books():
     )
 
 
+def build_inventory_sort_links(current_sort, current_dir):
+
+    # One URL per sortable column, toggling asc/desc on repeat clicks,
+    # while preserving whatever search/filter params are already in the
+    # URL. Keeps inventory.html's header links plain <a> tags - no JS
+    # needed for sorting.
+
+    links = {}
+
+    for column in INVENTORY_SORT_COLUMNS:
+
+        args = request.args.to_dict()
+
+        if current_sort == column and current_dir == "asc":
+            args["dir"] = "desc"
+        else:
+            args["dir"] = "asc"
+
+        args["sort"] = column
+
+        links[column] = url_for("inventory", **args)
+
+    return links
+
 
 @app.route("/inventory")
 def inventory():
+
+    search = request.args.get("search", "").strip()
+    search_by = request.args.get("search_by", "")
+    status_filter = request.args.get("status_filter", "").strip()
+    condition_filter = request.args.get("condition_filter", "").strip()
+
+    sort_by = request.args.get("sort", "copy_id")
+    if sort_by not in INVENTORY_SORT_COLUMNS:
+        sort_by = "copy_id"
+
+    sort_dir = request.args.get("dir", "asc").lower()
+    if sort_dir not in ("asc", "desc"):
+        sort_dir = "asc"
+
+    # ---- Overall inventory statistics (always whole-library, never  ----
+    # ---- affected by the search box or filters below)               ----
 
     cur.execute("""
         SELECT COUNT(*)
@@ -648,6 +780,73 @@ def inventory():
 
     lost = cur.fetchone()[0]
 
+    # ---- Full copy-level inventory listing (search + filters + sort) ----
+
+    query = """
+        SELECT
+            BookCopy.CopyID,
+            BookCopy.BookID,
+            Book.BookName,
+            Category.CategoryName,
+            BookCopy.Shelf,
+            BookCopy.Status,
+            BookCopy.`Condition`,
+            BookCopy.AdditionalRemark,
+            BookCopy.DateAdded
+
+        FROM BookCopy
+
+        JOIN Book
+        ON BookCopy.BookID = Book.BookID
+
+        JOIN Category
+        ON Book.CategoryID = Category.CategoryID
+
+        WHERE 1=1
+    """
+
+    values = []
+
+    if search:
+
+        if search_by == "copy_id":
+            query += " AND BookCopy.CopyID LIKE %s"
+
+        elif search_by == "book_id":
+            query += " AND BookCopy.BookID LIKE %s"
+
+        elif search_by == "shelf":
+            query += " AND BookCopy.Shelf LIKE %s"
+
+        elif search_by == "status":
+            query += " AND BookCopy.Status LIKE %s"
+
+        else:
+            query += " AND Book.BookName LIKE %s"
+
+        values.append("%" + search + "%")
+
+    # Filters are exact matches, validated against the same whitelists
+    # Add Book already uses - no second list of statuses/conditions to
+    # keep in sync.
+
+    if status_filter in VALID_STATUSES:
+        query += " AND BookCopy.Status = %s"
+        values.append(status_filter)
+
+    if condition_filter in VALID_CONDITIONS:
+        query += " AND BookCopy.`Condition` = %s"
+        values.append(condition_filter)
+
+    sort_column = INVENTORY_SORT_COLUMNS[sort_by]
+    sql_dir = "DESC" if sort_dir == "desc" else "ASC"
+
+    query += f" ORDER BY {sort_column} {sql_dir}"
+
+    cur.execute(query, values)
+
+    copies = cur.fetchall()
+
     return render_template(
         "inventory.html",
         total_books=total_books,
@@ -655,7 +854,18 @@ def inventory():
         available=available,
         issued=issued,
         damaged=damaged,
-        lost=lost
+        lost=lost,
+        copies=copies,
+        showing_count=len(copies),
+        search=search,
+        search_by=search_by,
+        status_filter=status_filter,
+        condition_filter=condition_filter,
+        valid_statuses=sorted(VALID_STATUSES),
+        valid_conditions=sorted(VALID_CONDITIONS),
+        sort_links=build_inventory_sort_links(sort_by, sort_dir),
+        current_sort=sort_by,
+        current_dir=sort_dir
     )
 
 @app.route("/view_categories")
@@ -694,6 +904,11 @@ def view_categories():
         categories=categories
     )
 
+
+@app.route("/borrow_books")
+def borrow_books():
+
+    return render_template("borrow_books.html")
 
 
 # ---------------- RUN FLASK ----------------
