@@ -1014,3 +1014,86 @@ hr{
     font-weight: 600;
     box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
 }
+
+/* ================= INVENTORY ================= */
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.badge-available {
+    background: #e7f7ef;
+    color: #198754;
+}
+
+.badge-issued {
+    background: #e8f1ff;
+    color: #0d6efd;
+}
+
+.badge-damaged {
+    background: #fdeaea;
+    color: #dc3545;
+}
+
+.badge-lost {
+    background: #eceff1;
+    color: #6c757d;
+}
+
+.badge-default {
+    background: #eceff1;
+    color: #2d3436;
+}
+
+.badge-excellent {
+    background: #e7f7ef;
+    color: #198754;
+}
+
+.badge-good {
+    background: #e8f1ff;
+    color: #0d6efd;
+}
+
+.badge-fair {
+    background: #fff8e1;
+    color: #b98900;
+}
+
+.badge-worn {
+    background: #fff1e0;
+    color: #e07a00;
+}
+
+.inventory-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.inventory-filters select {
+    width: auto;
+}
+
+.results-count {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 10px 0;
+}
+
+.sort-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.sort-link:hover {
+    text-decoration: underline;
+}
