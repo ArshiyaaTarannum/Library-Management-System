@@ -32,7 +32,6 @@ conn = mysql.connector.connect(
     password=os.getenv("DB_PASSWORD"),
     database=os.getenv("DB_NAME")
 )
-BookID
 cur = conn.cursor()
 
 # DASHBOARD PAGE 
@@ -1054,6 +1053,30 @@ def update_shelf():
     flash("Shelf updated successfully!")
 
     return redirect(url_for("shelf"))
+
+
+@app.route("/delete_shelf/<shelf_id>")
+def delete_shelf(shelf_id):
+
+    try:
+
+        cur.execute("""
+            DELETE FROM Shelf
+            WHERE ShelfID=%s
+        """, (shelf_id,))
+
+        conn.commit()
+
+        flash("Shelf deleted successfully!")
+
+    except mysql.connector.Error:
+
+        conn.rollback()
+
+        flash("Shelf contains books and cannot be deleted.")
+
+    return redirect(url_for("shelf"))
+
 # ---------------- RUN FLASK ----------------
 
 
