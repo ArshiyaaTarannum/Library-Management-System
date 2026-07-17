@@ -32,7 +32,7 @@ conn = mysql.connector.connect(
     password=os.getenv("DB_PASSWORD"),
     database=os.getenv("DB_NAME")
 )
-
+BookID
 cur = conn.cursor()
 
 # DASHBOARD PAGE 
@@ -278,6 +278,8 @@ def add_books():
     search = request.args.get("search", "").strip()
     search_by = request.args.get("search_by", "")
 
+    # ---------- Categories ----------
+
     cur.execute("""
         SELECT CategoryID, CategoryName
         FROM Category
@@ -286,7 +288,18 @@ def add_books():
 
     categories = cur.fetchall()
 
-    # Generate next Book ID
+    # ---------- Shelves ----------
+
+    cur.execute("""
+        SELECT ShelfID, ShelfName
+        FROM Shelf
+        WHERE Status='Active'
+        ORDER BY ShelfName
+    """)
+
+    shelves = cur.fetchall()
+
+    # ---------- Next Book ID ----------
 
     cur.execute("""
         SELECT BookID
@@ -297,16 +310,11 @@ def add_books():
 
     last_book = cur.fetchone()
 
-
     if last_book is None:
-
         next_book_id = "LIB0001"
-
     else:
-
         number = int(last_book[0][3:]) + 1
         next_book_id = f"LIB{number:04d}"
-
 
     query = """
         SELECT
@@ -334,9 +342,7 @@ def add_books():
         WHERE 1=1
     """
 
-
     values = []
-
 
     if search:
 
@@ -355,9 +361,7 @@ def add_books():
         else:
             query += " AND Book.BookName LIKE %s"
 
-
         values.append("%" + search + "%")
-
 
     query += """
         GROUP BY
@@ -376,15 +380,14 @@ def add_books():
         ORDER BY Book.BookID
     """
 
-
     cur.execute(query, values)
 
     books = cur.fetchall()
 
-
     return render_template(
         "add_books.html",
         categories=categories,
+        shelves=shelves,
         next_book_id=next_book_id,
         books=books,
         today=date.today().isoformat(),
@@ -604,7 +607,6 @@ def add_book():
         flash("Unable to add book.")
 
     return redirect(url_for("add_books"))
-
 
 @app.route("/books")
 def books():
