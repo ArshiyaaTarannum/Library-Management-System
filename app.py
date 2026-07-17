@@ -949,6 +949,111 @@ def shelf():
         next_shelf_id=next_shelf_id
     )
 
+
+@app.route("/add_shelf", methods=["POST"])
+def add_shelf():
+
+    shelf_name = request.form["shelf_name"].strip()
+    location = request.form["location"].strip()
+    capacity = request.form["capacity"]
+    status = request.form["status"]
+
+    if not shelf_name or not capacity:
+
+        flash("Please fill all required fields.")
+        return redirect(url_for("shelf"))
+
+    cur.execute("""
+        SELECT ShelfID
+        FROM Shelf
+        ORDER BY ShelfID DESC
+        LIMIT 1
+    """)
+
+    last = cur.fetchone()
+
+    if last is None:
+        shelf_id = "SH001"
+    else:
+        number = int(last[0][2:]) + 1
+        shelf_id = f"SH{number:03d}"
+
+    try:
+
+        cur.execute("""
+            INSERT INTO Shelf
+            (
+                ShelfID,
+                ShelfName,
+                Location,
+                Capacity,
+                Status
+            )
+
+            VALUES
+            (
+                %s,%s,%s,%s,%s
+            )
+        """,
+                    (
+                        shelf_id,
+                        shelf_name,
+                        location,
+                        capacity,
+                        status
+                    ))
+
+        conn.commit()
+
+        flash("Shelf added successfully!")
+
+    except mysql.connector.Error:
+
+        conn.rollback()
+
+        flash("Unable to add shelf.")
+
+    return redirect(url_for("shelf"))
+
+
+@app.route("/update_shelf", methods=["POST"])
+def update_shelf():
+
+    shelf_id = request.form["shelf_id"]
+
+    shelf_name = request.form["shelf_name"].strip()
+
+    location = request.form["location"].strip()
+
+    capacity = request.form["capacity"]
+
+    status = request.form["status"]
+
+    cur.execute("""
+        UPDATE Shelf
+
+        SET
+
+            ShelfName=%s,
+            Location=%s,
+            Capacity=%s,
+            Status=%s
+
+        WHERE ShelfID=%s
+    """,
+                (
+                    shelf_name,
+                    location,
+                    capacity,
+                    status,
+                    shelf_id
+                ))
+
+    conn.commit()
+
+    flash("Shelf updated successfully!")
+
+    return redirect(url_for("shelf"))
 # ---------------- RUN FLASK ----------------
 
 
