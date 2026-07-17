@@ -703,7 +703,6 @@ def build_inventory_sort_links(current_sort, current_dir):
 
     return links
 
-
 @app.route("/inventory")
 def inventory():
 
