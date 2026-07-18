@@ -875,6 +875,7 @@ def inventory():
         damaged=damaged,
         lost=lost,
         copies=copies,
+        shelves=shelves,
         showing_count=len(copies),
         search=search,
         search_by=search_by,
@@ -1167,133 +1168,6 @@ def delete_shelf(shelf_id):
 
     return redirect(url_for("shelf"))
 
-
-@app.route("/update_copy", methods=["POST"])
-def update_copy():
-
-    copy_id = request.form["copy_id"]
-    shelf = request.form["shelf"]
-    status = request.form["status"]
-    condition = request.form["condition"]
-    remark = request.form["remark"].strip()
-
-    if status not in VALID_STATUSES:
-        flash("Invalid status.")
-        return redirect(url_for("inventory"))
-
-    if condition not in VALID_CONDITIONS:
-        flash("Invalid condition.")
-        return redirect(url_for("inventory"))
-
-    # Check shelf exists
-
-    cur.execute("""
-        SELECT Capacity
-        FROM Shelf
-        WHERE ShelfID=%s
-    """, (shelf,))
-
-    row = cur.fetchone()
-
-    if row is None:
-        flash("Shelf not found.")
-        return redirect(url_for("inventory"))
-
-    capacity = row[0]
-
-    # Current shelf of this copy
-
-    cur.execute("""
-        SELECT Shelf
-        FROM BookCopy
-        WHERE CopyID=%s
-    """, (copy_id,))
-
-    current = cur.fetchone()
-
-    if current is None:
-        flash("Copy not found.")
-        return redirect(url_for("inventory"))
-
-    old_shelf = current[0]
-
-    # Only check capacity if shelf changed
-
-    if shelf != old_shelf:
-
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM BookCopy
-            WHERE Shelf=%s
-        """, (shelf,))
-
-        used = cur.fetchone()[0]
-
-        if used >= capacity:
-            flash("Selected shelf is already full.")
-            return redirect(url_for("inventory"))
-
-    try:
-
-        cur.execute("""
-            UPDATE BookCopy
-            SET
-                Shelf=%s,
-                Status=%s,
-                `Condition`=%s,
-                AdditionalRemark=%s
-            WHERE CopyID=%s
-        """,
-                    (
-                        shelf,
-                        status,
-                        condition,
-                        remark,
-                        copy_id
-                    ))
-
-        conn.commit()
-
-        flash("Copy updated successfully!")
-
-    except mysql.connector.Error:
-
-        conn.rollback()
-        flash("Unable to update copy.")
-
-    return redirect(url_for("inventory"))
-
-
-@app.route("/update_copy", methods=["POST"])
-def update_copy():
-
-    copy_id = request.form["copy_id"]
-    shelf = request.form["shelf"]
-    status = request.form["status"]
-    condition = request.form["condition"]
-    remark = request.form["remark"]
-
-    cur.execute("""
-        UPDATE BookCopy
-        SET
-            Shelf=%s,
-            Status=%s,
-            `Condition`=%s,
-            AdditionalRemark=%s
-        WHERE CopyID=%s
-    """, (
-        shelf,
-        status,
-        condition,
-        remark,
-        copy_id
-    ))
-
-    conn.commit()
-
-    flash("Copy updated successfully.")
-
-    return redirect(url_for("inventory"))
 
 # ---------------- RUN FLASK ----------------
 
