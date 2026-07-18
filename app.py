@@ -11,6 +11,7 @@ app.secret_key = "library_management_secret"
 
 VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
 VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
+VALID_SHELF_STATUS = {"Active", "Inactive"}
 
 
 INVENTORY_SORT_COLUMNS = {
@@ -978,6 +979,11 @@ def shelf():
 
 @app.route("/add_shelf", methods=["POST"])
 def add_shelf():
+    status = request.form["status"]
+
+    if status not in VALID_SHELF_STATUS:
+        flash("Invalid shelf status.")
+        return redirect(url_for("shelf"))
 
     shelf_name = request.form["shelf_name"].strip()
     location = request.form["location"].strip()
@@ -1051,6 +1057,11 @@ def add_shelf():
 
 @app.route("/update_shelf", methods=["POST"])
 def update_shelf():
+    status = request.form["status"]
+
+    if status not in VALID_SHELF_STATUS:
+        flash("Invalid shelf status.")
+        return redirect(url_for("shelf"))
 
     shelf_id = request.form["shelf_id"]
 
