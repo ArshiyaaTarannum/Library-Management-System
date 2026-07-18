@@ -979,29 +979,43 @@ def shelf():
 
 @app.route("/add_shelf", methods=["POST"])
 def add_shelf():
-    status = request.form["status"]
-
-    if status not in VALID_SHELF_STATUS:
-        flash("Invalid shelf status.")
-        return redirect(url_for("shelf"))
 
     shelf_name = request.form["shelf_name"].strip()
     location = request.form["location"].strip()
+
     try:
         capacity = int(request.form["capacity"])
     except ValueError:
         flash("Invalid shelf capacity.")
         return redirect(url_for("shelf"))
 
+    status = request.form["status"]
+
+    if status not in VALID_SHELF_STATUS:
+        flash("Invalid shelf status.")
+        return redirect(url_for("shelf"))
+
+    if not shelf_name:
+        flash("Shelf name is required.")
+        return redirect(url_for("shelf"))
+
     if capacity < 1:
         flash("Shelf capacity must be at least 1.")
         return redirect(url_for("shelf"))
-    status = request.form["status"]
 
-    if not shelf_name or not capacity:
+    # Check duplicate shelf name
 
-        flash("Please fill all required fields.")
+    cur.execute("""
+        SELECT 1
+        FROM Shelf
+        WHERE ShelfName=%s
+    """, (shelf_name,))
+
+    if cur.fetchone():
+        flash("Shelf name already exists.")
         return redirect(url_for("shelf"))
+
+    # Generate Shelf ID
 
     cur.execute("""
         SELECT ShelfID
@@ -1029,11 +1043,8 @@ def add_shelf():
                 Capacity,
                 Status
             )
-
             VALUES
-            (
-                %s,%s,%s,%s,%s
-            )
+            (%s,%s,%s,%s,%s)
         """,
                     (
                         shelf_id,
@@ -1050,23 +1061,15 @@ def add_shelf():
     except mysql.connector.Error:
 
         conn.rollback()
-
         flash("Unable to add shelf.")
 
     return redirect(url_for("shelf"))
 
 @app.route("/update_shelf", methods=["POST"])
 def update_shelf():
-    status = request.form["status"]
-
-    if status not in VALID_SHELF_STATUS:
-        flash("Invalid shelf status.")
-        return redirect(url_for("shelf"))
 
     shelf_id = request.form["shelf_id"]
-
     shelf_name = request.form["shelf_name"].strip()
-
     location = request.form["location"].strip()
 
     try:
@@ -1075,22 +1078,50 @@ def update_shelf():
         flash("Invalid shelf capacity.")
         return redirect(url_for("shelf"))
 
+    status = request.form["status"]
+
+    if status not in VALID_SHELF_STATUS:
+        flash("Invalid shelf status.")
+        return redirect(url_for("shelf"))
+
     if capacity < 1:
         flash("Shelf capacity must be at least 1.")
         return redirect(url_for("shelf"))
 
-    status = request.form["status"]
+    # Prevent duplicate names
+
+    cur.execute("""
+        SELECT ShelfID
+        FROM Shelf
+        WHERE ShelfName=%s
+        AND ShelfID<>%s
+    """, (shelf_name, shelf_id))
+
+    if cur.fetchone():
+        flash("Shelf name already exists.")
+        return redirect(url_for("shelf"))
+
+    # Don't allow capacity smaller than books already stored
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BookCopy
+        WHERE Shelf=%s
+    """, (shelf_id,))
+
+    used = cur.fetchone()[0]
+
+    if capacity < used:
+        flash(f"This shelf already contains {used} books.")
+        return redirect(url_for("shelf"))
 
     cur.execute("""
         UPDATE Shelf
-
         SET
-
             ShelfName=%s,
             Location=%s,
             Capacity=%s,
             Status=%s
-
         WHERE ShelfID=%s
     """,
                 (
@@ -1106,7 +1137,6 @@ def update_shelf():
     flash("Shelf updated successfully!")
 
     return redirect(url_for("shelf"))
-
 
 @app.route("/delete_shelf/<shelf_id>")
 def delete_shelf(shelf_id):
