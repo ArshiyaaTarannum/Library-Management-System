@@ -683,7 +683,6 @@ def books():
         books=books
     )
 
-
 def build_inventory_sort_links(current_sort, current_dir):
 
 
@@ -886,7 +885,6 @@ def view_categories():
         categories=categories
     )
 
-
 @app.route("/shelf")
 def shelf():
 
@@ -947,7 +945,6 @@ def shelf():
         shelves=shelves,
         next_shelf_id=next_shelf_id
     )
-
 
 @app.route("/add_shelf", methods=["POST"])
 def add_shelf():
@@ -1013,7 +1010,6 @@ def add_shelf():
         flash("Unable to add shelf.")
 
     return redirect(url_for("shelf"))
-
 
 @app.route("/update_shelf", methods=["POST"])
 def update_shelf():
