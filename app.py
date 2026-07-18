@@ -981,7 +981,15 @@ def add_shelf():
 
     shelf_name = request.form["shelf_name"].strip()
     location = request.form["location"].strip()
-    capacity = request.form["capacity"]
+    try:
+        capacity = int(request.form["capacity"])
+    except ValueError:
+        flash("Invalid shelf capacity.")
+        return redirect(url_for("shelf"))
+
+    if capacity < 1:
+        flash("Shelf capacity must be at least 1.")
+        return redirect(url_for("shelf"))
     status = request.form["status"]
 
     if not shelf_name or not capacity:
@@ -1050,7 +1058,15 @@ def update_shelf():
 
     location = request.form["location"].strip()
 
-    capacity = request.form["capacity"]
+    try:
+        capacity = int(request.form["capacity"])
+    except ValueError:
+        flash("Invalid shelf capacity.")
+        return redirect(url_for("shelf"))
+
+    if capacity < 1:
+        flash("Shelf capacity must be at least 1.")
+        return redirect(url_for("shelf"))
 
     status = request.form["status"]
 
