@@ -588,3 +588,23 @@ document.addEventListener("keydown", function (e) {
     }
 
 });
+// ================= INVENTORY =================
+
+function editCopy(copyId, shelf, status, condition, remark) {
+
+    document.getElementById("edit_copy_id").value = copyId;
+
+    document.getElementById("edit_shelf").value = shelf;
+
+    document.getElementById("edit_status").value = status;
+
+    document.getElementById("edit_condition").value = condition;
+
+    document.getElementById("edit_remark").value = remark;
+
+    document.getElementById("edit_copy_form").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
