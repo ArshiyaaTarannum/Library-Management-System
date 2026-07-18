@@ -1019,11 +1019,12 @@ hr{
 
 .badge {
     display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
     white-space: nowrap;
+    line-height: 1.4;
 }
 
 .badge-available {
