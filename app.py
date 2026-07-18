@@ -888,6 +888,64 @@ def inventory():
         current_dir=sort_dir
     )
 
+
+@app.route("/update_copy", methods=["POST"])
+def update_copy():
+
+    copy_id = request.form["copy_id"]
+    shelf = request.form["shelf"]
+    status = request.form["status"]
+    condition = request.form["condition"]
+    remark = request.form["remark"].strip()
+
+    if status not in VALID_STATUSES:
+        flash("Invalid status.")
+        return redirect(url_for("inventory"))
+
+    if condition not in VALID_CONDITIONS:
+        flash("Invalid condition.")
+        return redirect(url_for("inventory"))
+
+    # Check if shelf exists
+    cur.execute("""
+        SELECT 1
+        FROM Shelf
+        WHERE ShelfID=%s
+    """, (shelf,))
+
+    if cur.fetchone() is None:
+        flash("Invalid shelf.")
+        return redirect(url_for("inventory"))
+
+    try:
+
+        cur.execute("""
+            UPDATE BookCopy
+            SET
+                Shelf=%s,
+                Status=%s,
+                `Condition`=%s,
+                AdditionalRemark=%s
+            WHERE CopyID=%s
+        """, (
+            shelf,
+            status,
+            condition,
+            remark,
+            copy_id
+        ))
+
+        conn.commit()
+
+        flash("Copy updated successfully!")
+
+    except mysql.connector.Error:
+
+        conn.rollback()
+        flash("Unable to update copy.")
+
+    return redirect(url_for("inventory"))
+
 @app.route("/view_categories")
 def view_categories():
 
