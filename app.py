@@ -166,7 +166,6 @@ def delete_category(category_id):
 
 # DELETE BOOK
 
-
 @app.route("/delete_book/<book_id>")
 def delete_book(book_id):
 
@@ -859,6 +858,14 @@ def inventory():
 
     copies = cur.fetchall()
 
+    cur.execute("""
+        SELECT ShelfID, ShelfName
+        FROM Shelf
+        WHERE Status='Active'
+        ORDER BY ShelfName
+    """)
+    shelves = cur.fetchall()
+
     return render_template(
         "inventory.html",
         total_books=total_books,
@@ -1159,6 +1166,51 @@ def delete_shelf(shelf_id):
         flash("Shelf contains books and cannot be deleted.")
 
     return redirect(url_for("shelf"))
+
+
+@app.route("/edit_copy/<copy_id>")
+def edit_copy(copy_id):
+
+    cur.execute("""
+        SELECT
+            BookCopy.CopyID,
+            BookCopy.BookID,
+            Book.BookName,
+            BookCopy.Shelf,
+            BookCopy.Status,
+            BookCopy.`Condition`,
+            BookCopy.AdditionalRemark
+
+        FROM BookCopy
+
+        JOIN Book
+        ON BookCopy.BookID = Book.BookID
+
+        WHERE BookCopy.CopyID=%s
+    """, (copy_id,))
+
+    copy = cur.fetchone()
+
+    if copy is None:
+        flash("Copy not found.")
+        return redirect(url_for("inventory"))
+
+    cur.execute("""
+        SELECT ShelfID, ShelfName
+        FROM Shelf
+        WHERE Status='Active'
+        ORDER BY ShelfName
+    """)
+
+    shelves = cur.fetchall()
+
+    return render_template(
+        "edit_copy.html",
+        copy=copy,
+        shelves=shelves,
+        valid_statuses=sorted(VALID_STATUSES),
+        valid_conditions=sorted(VALID_CONDITIONS)
+    )
 
 # ---------------- RUN FLASK ----------------
 
