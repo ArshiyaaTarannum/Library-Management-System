@@ -906,16 +906,53 @@ def update_copy():
         flash("Invalid condition.")
         return redirect(url_for("inventory"))
 
-    # Check if shelf exists
+    # Check copy exists and get current shelf
+
     cur.execute("""
-        SELECT 1
+        SELECT Shelf
+        FROM BookCopy
+        WHERE CopyID=%s
+    """, (copy_id,))
+
+    row = cur.fetchone()
+
+    if row is None:
+        flash("Copy not found.")
+        return redirect(url_for("inventory"))
+
+    old_shelf = row[0]
+
+    # Check destination shelf exists
+
+    cur.execute("""
+        SELECT Capacity
         FROM Shelf
         WHERE ShelfID=%s
     """, (shelf,))
 
-    if cur.fetchone() is None:
+    row = cur.fetchone()
+
+    if row is None:
         flash("Invalid shelf.")
         return redirect(url_for("inventory"))
+
+    capacity = row[0]
+
+    # Check shelf capacity only if moving to another shelf
+
+    if old_shelf != shelf:
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM BookCopy
+            WHERE Shelf=%s
+        """, (shelf,))
+
+        used = cur.fetchone()[0]
+
+        if used >= capacity:
+            flash("Selected shelf is already full.")
+            return redirect(url_for("inventory"))
 
     try:
 
@@ -943,6 +980,29 @@ def update_copy():
 
         conn.rollback()
         flash("Unable to update copy.")
+
+    return redirect(url_for("inventory"))
+
+
+@app.route("/delete_copy/<copy_id>")
+def delete_copy(copy_id):
+
+    try:
+
+        cur.execute("""
+            DELETE FROM BookCopy
+            WHERE CopyID=%s
+        """, (copy_id,))
+
+        conn.commit()
+
+        flash("Copy deleted successfully!")
+
+    except mysql.connector.Error:
+
+        conn.rollback()
+
+        flash("Unable to delete copy.")
 
     return redirect(url_for("inventory"))
 
