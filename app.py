@@ -472,6 +472,36 @@ def add_book():
         if condition not in VALID_CONDITIONS:
             flash("Every group needs a valid Condition.")
             return redirect(url_for("add_books"))
+        cur.execute("""
+            SELECT Capacity
+            FROM Shelf
+            WHERE ShelfID=%s
+        """, (shelf,))
+
+        row = cur.fetchone()
+
+        if row is None:
+            flash("Selected shelf does not exist.")
+            return redirect(url_for("add_books"))
+
+        capacity = row[0]
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM BookCopy
+            WHERE Shelf=%s
+        """, (shelf,))
+
+        current_books = cur.fetchone()[0]
+
+        if current_books + quantity > capacity:
+
+            flash(
+                f"{shelf} only has "
+                f"{capacity-current_books} spaces remaining."
+            )
+
+            return redirect(url_for("add_books"))
 
         cleaned_groups.append(
             (quantity, shelf, "Available", condition, remark))
