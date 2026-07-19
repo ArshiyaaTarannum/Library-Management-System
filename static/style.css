@@ -1015,16 +1015,109 @@ hr{
     box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
 }
 
+/* ================= ADD BOOK: COPY ALLOCATION ================= */
+
+.allocation-block {
+    margin-top: 10px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 25px;
+    margin: 10px 0 15px;
+}
+
+.radio-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #2d3436;
+    margin: 0;
+}
+
+.radio-inline input {
+    width: auto;
+    margin: 0;
+}
+
+.hint-text {
+    font-size: 14px;
+    color: #0d6efd;
+    background: #eaf2ff;
+    border: 1px solid #cfe2ff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+}
+
+.error-text {
+    font-size: 14px;
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c2c7;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 10px;
+}
+
+.copy-group {
+    background: #fafdfb;
+    border: 1px solid #d8e3dc;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.copy-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #198754;
+}
+
+.copy-group-header .remove-group-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    margin: 0;
+}
+
+.add-group-btn {
+    width: 100%;
+    background: white;
+    color: #198754;
+    border: 2px solid #198754;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.add-group-btn:hover {
+    background: #198754;
+    color: white;
+}
+
+.allocation-summary {
+    text-align: center;
+    font-weight: 700;
+    font-size: 17px;
+    color: #2d3436;
+    background: #eef9f4;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
 /* ================= INVENTORY ================= */
 
 .badge {
     display: inline-block;
-    padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
     white-space: nowrap;
-    line-height: 1.4;
 }
 
 .badge-available {
@@ -1097,4 +1190,51 @@ hr{
 
 .sort-link:hover {
     text-decoration: underline;
+}
+
+.inline-action-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.member-select {
+    width: auto;
+    max-width: 180px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.action-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    margin: 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+}
+
+.issue-btn {
+    background: #198754;
+}
+
+.issue-btn:hover {
+    background: #146c43;
+}
+
+.return-btn {
+    background: #0d6efd;
+}
+
+.return-btn:hover {
+    background: #0b5ed7;
+}
+
+.no-action-text {
+    color: #6c757d;
+    font-size: 13px;
 }
