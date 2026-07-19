@@ -35,7 +35,10 @@ FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
 FINE_MONTH_LENGTH_DAYS = 30
 FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
 # DATABASE CONNECTION 
-
+print("DB_HOST =", repr(os.getenv("DB_HOST")))
+print("DB_USER =", repr(os.getenv("DB_USER")))
+print("DB_PASSWORD =", repr(os.getenv("DB_PASSWORD")))
+print("DB_NAME =", repr(os.getenv("DB_NAME")))
 conn = mysql.connector.connect(
     host=os.getenv("DB_HOST"),
     user=os.getenv("DB_USER"),
@@ -1846,6 +1849,36 @@ def return_book():
 
     return redirect(url_for("inventory"))
 
+
+app = Flask(__name__)
+app.secret_key = "library_management_secret"
+
+VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
+VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
+VALID_SHELF_STATUS = {"Active", "Inactive"}
+
+
+INVENTORY_SORT_COLUMNS = {
+    "copy_id": "BookCopy.CopyID",
+    "book_id": "BookCopy.BookID",
+    "book_name": "Book.BookName",
+    "category": "Category.CategoryName",
+    "shelf": "BookCopy.Shelf",
+    "status": "BookCopy.Status",
+    "condition": "BookCopy.`Condition`",
+    "date_added": "BookCopy.DateAdded",
+}
+# ---------------- LIBRARY SETTINGS ----------------
+
+BORROW_LIMIT = 5
+
+LOAN_PERIOD_DAYS = 14
+
+FINE_BASE_RATE = 5                 # ₹5/day for first month
+FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
+FINE_MONTH_LENGTH_DAYS = 30
+FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
+# DATABASE CONNECTION
 
 # ---------------- RUN FLASK ----------------
 
