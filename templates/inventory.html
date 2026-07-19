@@ -276,29 +276,6 @@
 
             <td>
 
-                <button type="button" class="action-btn edit-btn" onclick="editCopy(
-                        '{{ copy[0] }}',
-                        '{{ copy[4] }}',
-                        '{{ copy[5] }}',
-                        '{{ copy[6] }}',
-                        `{{ copy[7] or '' }}`
-                    )">
-
-                    Edit
-
-                </button>
-
-                <a href="{{ url_for('delete_copy', copy_id=copy[0]) }}" class="action-btn delete-btn"
-                    onclick="return confirm('Delete this copy?');">
-
-                    Delete
-
-                </a>
-
-            </td>
-
-            <td>
-
                 {% if copy[6] == 'Excellent' %}
                 <span class="badge badge-excellent">Excellent</span>
 
