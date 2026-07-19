@@ -233,9 +233,8 @@
                 </a>
             </th>
 
-            <th>
-                Action
-            </th>
+            <th>Circulation</th>
+            <th>Manage</th>
 
         </tr>
 
@@ -273,6 +272,30 @@
                 <span class="badge badge-default">{{ copy[5] }}</span>
                 {% endif %}
 
+            </td>
+            </td>
+            
+            <td>
+            
+                <button type="button" class="action-btn edit-btn" onclick="editCopy(
+                        '{{ copy[0] }}',
+                        '{{ copy[4] }}',
+                        '{{ copy[5] }}',
+                        '{{ copy[6] }}',
+                        `{{ copy[7] or '' }}`
+                    )">
+            
+                    Edit
+            
+                </button>
+            
+                <a href="{{ url_for('delete_copy', copy_id=copy[0]) }}" class="action-btn delete-btn"
+                    onclick="return confirm('Delete this copy?');">
+            
+                    Delete
+            
+                </a>
+            
             </td>
 
             <td>
