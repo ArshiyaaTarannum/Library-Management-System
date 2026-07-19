@@ -15,6 +15,15 @@
 <body>
 
     <h1>Inventory Overview</h1>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="flash-message">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
     <p class="subtitle">
         A snapshot of the entire book collection and copy status across the library.
@@ -305,57 +314,58 @@
                 {{ copy[8] }}
             </td>
             <td>
-            
+
                 {% if copy[5] == 'Available' %}
-            
+
                 {% if active_members %}
-            
+
                 <form action="{{ url_for('issue_book') }}" method="POST" class="inline-action-form">
-            
+
                     <input type="hidden" name="copy_id" value="{{ copy[0] }}">
-            
+
                     <select name="member_id" class="member-select" required>
-            
+
                         <option value="">Select Member</option>
-            
+
                         {% for m in active_members %}
                         <option value="{{ m[0] }}">
                             {{ m[1] }} ({{ m[2] }}/{{ borrow_limit }})
                         </option>
                         {% endfor %}
-            
+
                     </select>
-            
+
                     <button type="submit" class="action-btn issue-btn">
                         Issue
                     </button>
-            
+
                 </form>
-            
+
                 {% else %}
-            
-                No active members
-            
+
+                <span class="no-action-text">No active members</span>
+
                 {% endif %}
-            
+
                 {% elif copy[5] == 'Issued' %}
-            
-                <form action="{{ url_for('return_book') }}" method="POST">
-            
+
+                <form action="{{ url_for('return_book') }}" method="POST" class="inline-action-form"
+                    onsubmit="return confirm('Mark Copy {{ copy[0] }} as returned?')">
+
                     <input type="hidden" name="copy_id" value="{{ copy[0] }}">
-            
+
                     <button type="submit" class="action-btn return-btn">
                         Return
                     </button>
-            
+
                 </form>
-            
+
                 {% else %}
-            
-                —
-            
+
+                <span class="no-action-text">—</span>
+
                 {% endif %}
-            
+
             </td>
 
             <td>
@@ -385,7 +395,7 @@
 
         <tr>
 
-            <td colspan="10">
+            <td colspan="11">
                 No copies found.
             </td>
 
@@ -396,6 +406,8 @@
 
     </table>
     
+    <hr>
+
     <h2>Edit Copy</h2>
 
     <form action="{{ url_for('update_copy') }}" method="POST" class="form-container">
@@ -488,6 +500,9 @@
 
         <a href="{{ url_for('category') }}" class="nav-btn">
             Category Management
+        </a>
+        <a href="{{ url_for('members') }}" class="nav-btn">
+            Member Management
         </a>
 
     </div>
