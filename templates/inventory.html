@@ -304,6 +304,59 @@
             <td>
                 {{ copy[8] }}
             </td>
+            <td>
+            
+                {% if copy[5] == 'Available' %}
+            
+                {% if active_members %}
+            
+                <form action="{{ url_for('issue_book') }}" method="POST" class="inline-action-form">
+            
+                    <input type="hidden" name="copy_id" value="{{ copy[0] }}">
+            
+                    <select name="member_id" class="member-select" required>
+            
+                        <option value="">Select Member</option>
+            
+                        {% for m in active_members %}
+                        <option value="{{ m[0] }}">
+                            {{ m[1] }} ({{ m[2] }}/{{ borrow_limit }})
+                        </option>
+                        {% endfor %}
+            
+                    </select>
+            
+                    <button type="submit" class="action-btn issue-btn">
+                        Issue
+                    </button>
+            
+                </form>
+            
+                {% else %}
+            
+                No active members
+            
+                {% endif %}
+            
+                {% elif copy[5] == 'Issued' %}
+            
+                <form action="{{ url_for('return_book') }}" method="POST">
+            
+                    <input type="hidden" name="copy_id" value="{{ copy[0] }}">
+            
+                    <button type="submit" class="action-btn return-btn">
+                        Return
+                    </button>
+            
+                </form>
+            
+                {% else %}
+            
+                —
+            
+                {% endif %}
+            
+            </td>
 
             <td>
 
@@ -342,11 +395,7 @@
 
 
     </table>
-    <hr>
-
-    </table>
     
-    <hr>
     <h2>Edit Copy</h2>
 
     <form action="{{ url_for('update_copy') }}" method="POST" class="form-container">
