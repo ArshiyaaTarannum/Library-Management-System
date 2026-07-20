@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Library Rules</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<h1>Library Borrowing Guidelines</h1>
+
+<p class="subtitle">
+Please read the following rules before borrowing any library material.
+</p>
+
+<div class="rules-container">
+
+    <div class="rule-card">
+
+        <h2>Eligibility</h2>
+
+        <ul>
+            <li>Only active registered members may borrow books.</li>
+            <li>Membership must remain active throughout the borrowing period.</li>
+        </ul>
+
+    </div>
+
+    <div class="rule-card">
+
+        <h2>Borrow Limit</h2>
+
+        <ul>
+            <li>Maximum books allowed at one time:
+                <strong>{{ borrow_limit }}</strong>
+            </li>
+
+            <li>A new book cannot be issued after reaching the limit.</li>
+        </ul>
+
+    </div>
+
+    <div class="rule-card">
+
+        <h2>Loan Period</h2>
+
+        <ul>
+
+            <li>Each issued book must be returned within
+                <strong>{{ loan_days }}</strong> days.
+            </li>
+
+            <li>The due date is calculated automatically during issue.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="rule-card">
+
+        <h2>Late Return & Fine</h2>
+
+        <ul>
+
+            <li>Late returns attract a daily fine.</li>
+
+            <li>Fine starts after the due date.</li>
+
+            <li>The longer the delay, the higher the fine rate.</li>
+
+            <li>The fine will never exceed the purchase price of the book plus ₹100.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="rule-card">
+
+        <h2>Damaged or Lost Books</h2>
+
+        <ul>
+
+            <li>Members are responsible for books issued to them.</li>
+
+            <li>Damaged or lost books may require replacement charges.</li>
+
+            <li>The librarian's decision regarding compensation is final.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="rule-card">
+
+        <h2>General Rules</h2>
+
+        <ul>
+
+            <li>Handle books carefully.</li>
+
+            <li>Do not write, highlight or tear pages.</li>
+
+            <li>Return books to the circulation desk only.</li>
+
+            <li>Keep your contact information updated.</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<div class="navigation-buttons">
+
+    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+        Dashboard
+    </a>
+
+</div>
+
+</body>
+
+</html>
