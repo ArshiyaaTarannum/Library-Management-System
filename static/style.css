@@ -1238,3 +1238,41 @@ hr{
     color: #6c757d;
     font-size: 13px;
 }
+/* ---------- Library Rules ---------- */
+
+.rules-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin: 35px auto;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.rule-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+    border-left: 6px solid #198754;
+    transition: .25s;
+}
+
+.rule-card:hover {
+    transform: translateY(-5px);
+}
+
+.rule-card h2 {
+    color: #198754;
+    margin-bottom: 15px;
+    font-size: 22px;
+}
+
+.rule-card ul {
+    padding-left: 20px;
+}
+
+.rule-card li {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
