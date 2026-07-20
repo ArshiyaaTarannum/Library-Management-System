@@ -32,7 +32,7 @@
     <div class="dashboard">
 
         <div class="dashboard-card">
-            <h2>📚 Total Books</h2>
+            <h2> Total Books</h2>
             <p style="font-size:36px;font-weight:700;color:#198754;">
                 {{ total_books }}
             </p>
@@ -40,7 +40,7 @@
         </div>
 
         <div class="dashboard-card">
-            <h2>📦 Total Copies</h2>
+            <h2> Total Copies</h2>
             <p style="font-size:36px;font-weight:700;color:#198754;">
                 {{ total_copies }}
             </p>
@@ -52,7 +52,7 @@
     <div class="dashboard">
 
         <div class="dashboard-card">
-            <h2>✅ Available</h2>
+            <h2> Available</h2>
             <p style="font-size:36px;font-weight:700;color:#198754;">
                 {{ available }}
             </p>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="dashboard-card">
-            <h2>📖 Issued</h2>
+            <h2> Issued</h2>
             <p style="font-size:36px;font-weight:700;color:#0d6efd;">
                 {{ issued }}
             </p>
@@ -68,7 +68,7 @@
         </div>
 
         <div class="dashboard-card">
-            <h2>⚠️ Damaged</h2>
+            <h2> Damaged</h2>
             <p style="font-size:36px;font-weight:700;color:#dc3545;">
                 {{ damaged }}
             </p>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="dashboard-card">
-            <h2>❌ Lost</h2>
+            <h2> Lost</h2>
             <p style="font-size:36px;font-weight:700;color:#6c757d;">
                 {{ lost }}
             </p>
@@ -182,6 +182,83 @@
     <p class="results-count">
         Showing {{ showing_count }} of {{ total_copies }} total copies
     </p>
+    <form action="{{ url_for('update_copy') }}" method="POST" class="form-container">
+    
+        <div class="form-group">
+    
+            <label for="edit_copy_id">Copy ID</label>
+    
+            <input type="text" id="edit_copy_id" name="copy_id" readonly>
+    
+        </div>
+    
+        <div class="form-group">
+    
+            <label for="edit_shelf">Shelf</label>
+    
+            <select id="edit_shelf" name="shelf" required>
+    
+                {% for shelf in shelves %}
+    
+                <option value="{{ shelf[0] }}">
+                    {{ shelf[1] }}
+                </option>
+    
+                {% endfor %}
+    
+            </select>
+    
+        </div>
+    
+        <div class="form-group">
+    
+            <label for="edit_status">Status</label>
+    
+            <select id="edit_status" name="status" required>
+    
+                {% for status in valid_statuses %}
+    
+                <option value="{{ status }}">
+                    {{ status }}
+                </option>
+    
+                {% endfor %}
+    
+            </select>
+    
+        </div>
+    
+        <div class="form-group">
+    
+            <label for="edit_condition">Condition</label>
+    
+            <select id="edit_condition" name="condition" required>
+    
+                {% for condition in valid_conditions %}
+    
+                <option value="{{ condition }}">
+                    {{ condition }}
+                </option>
+    
+                {% endfor %}
+    
+            </select>
+    
+        </div>
+    
+        <div class="form-group">
+    
+            <label for="edit_remark">Additional Remark</label>
+    
+            <textarea id="edit_remark" name="remark" rows="3"></textarea>
+    
+        </div>
+    
+        <button type="submit" class="submit-btn">
+            Update Copy
+        </button>
+    
+    </form>
 
     <!-- INVENTORY TABLE -->
 
@@ -410,83 +487,6 @@
 
     <h2>Edit Copy</h2>
 
-    <form action="{{ url_for('update_copy') }}" method="POST" class="form-container">
-
-        <div class="form-group">
-
-            <label for="edit_copy_id">Copy ID</label>
-
-            <input type="text" id="edit_copy_id" name="copy_id" readonly>
-
-        </div>
-
-        <div class="form-group">
-
-            <label for="edit_shelf">Shelf</label>
-
-            <select id="edit_shelf" name="shelf" required>
-
-                {% for shelf in shelves %}
-
-                <option value="{{ shelf[0] }}">
-                    {{ shelf[1] }}
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-        <div class="form-group">
-
-            <label for="edit_status">Status</label>
-
-            <select id="edit_status" name="status" required>
-
-                {% for status in valid_statuses %}
-
-                <option value="{{ status }}">
-                    {{ status }}
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-        <div class="form-group">
-
-            <label for="edit_condition">Condition</label>
-
-            <select id="edit_condition" name="condition" required>
-
-                {% for condition in valid_conditions %}
-
-                <option value="{{ condition }}">
-                    {{ condition }}
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-        <div class="form-group">
-
-            <label for="edit_remark">Additional Remark</label>
-
-            <textarea id="edit_remark" name="remark" rows="3"></textarea>
-
-        </div>
-
-        <button type="submit" class="submit-btn">
-            Update Copy
-        </button>
-
-    </form>
 
     <div class="navigation-buttons">
 
