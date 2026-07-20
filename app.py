@@ -836,7 +836,6 @@ def update_copy():
 
     return redirect(url_for("inventory"))
 
-
 @app.route("/delete_copy/<copy_id>")
 def delete_copy(copy_id):
 
@@ -1480,7 +1479,8 @@ def members():
         members=all_members,
         total_members=len(all_members),
         next_member_id=next_member_id,
-        today=date.today().isoformat()
+        today=date.today().isoformat(),
+        search_by=search_by
     )
 
 
@@ -1845,18 +1845,13 @@ def return_book():
 
     return redirect(url_for("inventory"))
 
+# ---------------- BORROWING POLICY ----------------
 
-# ---------------- LIBRARY SETTINGS ----------------
 
-BORROW_LIMIT = 5
+@app.route("/borrowing_policy")
+def borrowing_policy():
 
-LOAN_PERIOD_DAYS = 14
-
-FINE_BASE_RATE = 5                 # ₹5/day for first month
-FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
-FINE_MONTH_LENGTH_DAYS = 30
-FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
-# DATABASE CONNECTION
+    return render_template("borrowing_policy.html")
 
 # ---------------- RUN FLASK ----------------
 
