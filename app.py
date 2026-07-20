@@ -1848,10 +1848,16 @@ def return_book():
 # ---------------- BORROWING POLICY ----------------
 
 
-@app.route("/borrowing_policy")
-def borrowing_policy():
+# ---------------- LIBRARY RULES ----------------
 
-    return render_template("borrowing_policy.html")
+@app.route("/library_rules")
+def library_rules():
+
+    return render_template(
+        "library_rules.html",
+        borrow_limit=BORROW_LIMIT,
+        loan_days=LOAN_PERIOD_DAYS
+    )
 
 # ---------------- RUN FLASK ----------------
 
