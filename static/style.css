@@ -1238,6 +1238,15 @@ hr{
     color: #6c757d;
     font-size: 13px;
 }
+/* ================= BORROW / RETURN ================= */
+
+.overdue-row {
+    background: #fdeaea;
+}
+
+.overdue-row td {
+    border-color: #f5c2c7;
+}
 /* ---------- Library Rules ---------- */
 
 .rules-container {
@@ -1275,4 +1284,22 @@ hr{
 .rule-card li {
     margin-bottom: 12px;
     line-height: 1.6;
+}
+.pay-btn {
+    background: #ffc107;
+    color: #2d3436;
+}
+
+.pay-btn:hover {
+    background: #e0a800;
+}
+
+.pay-form {
+    display: none;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.pay-form.visible {
+    display: flex;
 }
