@@ -1642,11 +1642,12 @@ def issue_book():
 
     copy_id = request.form.get("copy_id", "").strip()
     member_id = request.form.get("member_id", "").strip()
+    next_url = request.form.get("next") or url_for("inventory")
 
     if not copy_id or not member_id:
 
         flash("Please select both a Copy and a Member.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     # ---- Validate the copy ----
 
@@ -1661,18 +1662,18 @@ def issue_book():
     if copy_row is None:
 
         flash("No such Book Copy exists.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     if copy_row[0] != "Available":
 
         flash(
             f"Copy {copy_id} is not Available (current status: {copy_row[0]}).")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     # ---- Validate the member ----
 
     cur.execute("""
-        SELECT IsActive
+        SELECT Active
         FROM Member
         WHERE MemberID=%s
     """, (member_id,))
@@ -1682,12 +1683,12 @@ def issue_book():
     if member_row is None:
 
         flash("No such Member exists.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     if member_row[0] != 1:
 
         flash("This Member is deactivated and cannot be issued books.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     # ---- Enforce the borrow limit ----
 
@@ -1699,7 +1700,7 @@ def issue_book():
             f"Member {member_id} already has {active_issue_count} books "
             f"issued (limit: {BORROW_LIMIT})."
         )
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     # ---- Create the IssueTransaction and flip the copy's Status ----
 
@@ -1754,7 +1755,7 @@ def issue_book():
 
         flash("Unable to issue the book.")
 
-    return redirect(url_for("inventory"))
+    return redirect(next_url)
 
 
 # ---------------- RETURN BOOK ----------------
@@ -1763,11 +1764,15 @@ def issue_book():
 def return_book():
 
     copy_id = request.form.get("copy_id", "").strip()
+    next_url = request.form.get("next") or url_for("inventory")
 
     if not copy_id:
 
         flash("Please select a Copy to return.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
+
+    # ---- Find the active transaction for this copy, together with the ----
+    # ---- Book's PurchasePrice (needed for the fine cap), in one JOIN  ----
 
     cur.execute("""
         SELECT
@@ -1792,7 +1797,7 @@ def return_book():
     if active_transaction is None:
 
         flash(f"Copy {copy_id} does not have an active Issue to return.")
-        return redirect(url_for("inventory"))
+        return redirect(next_url)
 
     transaction_id, due_date, purchase_price = active_transaction
 
@@ -1801,18 +1806,17 @@ def return_book():
     fine_amount = calculate_fine(due_date, actual_return_date, purchase_price)
 
     try:
+
         cur.execute("""
             UPDATE IssueTransaction
             SET
-            ActualReturnDate=%s,
-            Status='Returned',
-            FineAmount=%s,
-            PaymentStatus=%s
-        WHERE TransactionID=%s
+                ActualReturnDate=%s,
+                Status='Returned',
+                FineAmount=%s
+            WHERE TransactionID=%s
         """, (
             actual_return_date.isoformat(),
             fine_amount,
-            "Paid" if fine_amount <= 0 else "Pending",
             transaction_id
         ))
 
@@ -1843,7 +1847,7 @@ def return_book():
 
         flash("Unable to return the book.")
 
-    return redirect(url_for("inventory"))
+    return redirect(next_url)
 
 # ---------------- BORROWING POLICY ----------------
 
