@@ -24,6 +24,20 @@ INVENTORY_SORT_COLUMNS = {
     "condition": "BookCopy.`Condition`",
     "date_added": "BookCopy.DateAdded",
 }
+
+BORROW_SORT_COLUMNS = {
+    "transaction_id": "IssueTransaction.TransactionID",
+    "copy_id": "IssueTransaction.CopyID",
+    "book_id": "BookCopy.BookID",
+    "book_name": "Book.BookName",
+    "member_id": "Member.MemberID",
+    "member_name": "Member.MemberName",
+    "issue_date": "IssueTransaction.IssueDate",
+    "due_date": "IssueTransaction.DueDate",
+    "status": "IssueTransaction.Status",
+    "fine": "IssueTransaction.FineAmount",
+    "payment_status": "IssueTransaction.FinePaid",
+}
 # ---------------- LIBRARY SETTINGS ----------------
 
 BORROW_LIMIT = 5
@@ -104,7 +118,6 @@ def category():
         next_category_id=next_category_id
     )
 
-
 # ADD CATEGORY
 
 @app.route("/add_category", methods=["POST"])
@@ -149,7 +162,6 @@ def add_category():
         flash("Category already exists!")
 
     return redirect(url_for("category"))
-
 
 # DELETE CATEGORY 
 
@@ -1259,6 +1271,7 @@ def inventory():
     if sort_dir not in ("asc", "desc"):
         sort_dir = "asc"
 
+
     cur.execute("""
         SELECT COUNT(*)
         FROM Book
@@ -1305,7 +1318,6 @@ def inventory():
 
     lost = cur.fetchone()[0]
 
-    # ---- Full copy-level inventory listing (search + filters + sort) ----
 
     query = """
         SELECT
@@ -1368,24 +1380,12 @@ def inventory():
 
     copies = cur.fetchall()
 
-    cur.execute("""
-        SELECT
-            Member.MemberID,
-            Member.MemberName,
-            COUNT(CASE WHEN IssueTransaction.Status='Issued' THEN 1 END)
-        FROM Member
+    # ---- Active members, with their current Issued count, for the ----
+    # ---- Issue-book dropdown added to this page. Read-only display -  ----
+    # ---- the actual borrow-limit enforcement still happens only      ----
+    # ---- inside issue_book(), via get_active_issue_count().          ----
 
-        LEFT JOIN IssueTransaction
-        ON Member.MemberID = IssueTransaction.MemberID
-
-        WHERE Member.IsActive = 1
-
-        GROUP BY Member.MemberID, Member.MemberName
-
-        ORDER BY Member.MemberName
-    """)
-
-    active_members = cur.fetchall()
+    active_members = get_active_members_with_issue_counts()
 
     return render_template(
         "inventory.html",
@@ -1410,13 +1410,238 @@ def inventory():
         borrow_limit=BORROW_LIMIT
     )
 
-
 @app.route("/borrow_books")
 def borrow_books():
 
-    return render_template("borrow_books.html")
+    search = request.args.get("search", "").strip()
+    search_by = request.args.get("search_by", "")
+    status_filter = request.args.get("status_filter", "").strip()
+    payment_filter = request.args.get("payment_filter", "").strip()
+    overdue_only = request.args.get("overdue_only", "") == "1"
+
+    sort_by = request.args.get("sort", "issue_date")
+    if sort_by not in BORROW_SORT_COLUMNS:
+        sort_by = "issue_date"
+
+    sort_dir = request.args.get("dir", "desc").lower()
+    if sort_dir not in ("asc", "desc"):
+        sort_dir = "desc"
+
+    today = date.today()
+
+    # ---- Dashboard stats ----
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM IssueTransaction
+        WHERE Status='Issued'
+    """)
+
+    total_issued = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM IssueTransaction
+        WHERE Status='Issued' AND DueDate < %s
+    """, (today.isoformat(),))
+
+    total_overdue = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM IssueTransaction
+        WHERE Status='Returned' AND ActualReturnDate = %s
+    """, (today.isoformat(),))
+
+    returned_today = cur.fetchone()[0]
+
+    cur.execute("""
+        SELECT COALESCE(SUM(FineAmount), 0)
+        FROM IssueTransaction
+        WHERE Status='Returned' AND FinePaid=0
+    """)
+
+    outstanding_fine = cur.fetchone()[0]
+
+    # ---- Issue form data (reused, not re-queried per field) ----
+
+    active_members = get_active_members_with_issue_counts()
+    available_copies = get_available_copies_for_issue()
+
+    # ---- Borrowed Books table ----
+
+    query = """
+        SELECT
+            IssueTransaction.TransactionID,
+            IssueTransaction.CopyID,
+            BookCopy.BookID,
+            Book.BookName,
+            Member.MemberID,
+            Member.MemberName,
+            IssueTransaction.IssueDate,
+            IssueTransaction.DueDate,
+            IssueTransaction.ActualReturnDate,
+            IssueTransaction.Status,
+            IssueTransaction.FineAmount,
+            IssueTransaction.FinePaid,
+            Book.PurchasePrice
+
+        FROM IssueTransaction
+
+        JOIN BookCopy
+        ON IssueTransaction.CopyID = BookCopy.CopyID
+
+        JOIN Book
+        ON BookCopy.BookID = Book.BookID
+
+        JOIN Member
+        ON IssueTransaction.MemberID = Member.MemberID
+
+        WHERE 1=1
+    """
+
+    values = []
+
+    if search:
+
+        if search_by == "transaction_id":
+            query += " AND IssueTransaction.TransactionID LIKE %s"
+
+        elif search_by == "copy_id":
+            query += " AND IssueTransaction.CopyID LIKE %s"
+
+        elif search_by == "book_id":
+            query += " AND BookCopy.BookID LIKE %s"
+
+        elif search_by == "member_id":
+            query += " AND Member.MemberID LIKE %s"
+
+        elif search_by == "member_name":
+            query += " AND Member.MemberName LIKE %s"
+
+        else:
+            query += " AND Book.BookName LIKE %s"
+
+        values.append("%" + search + "%")
+
+    if status_filter in ("Issued", "Returned"):
+        query += " AND IssueTransaction.Status = %s"
+        values.append(status_filter)
+
+    if payment_filter in ("Paid", "Unpaid"):
+        query += " AND IssueTransaction.FinePaid = %s"
+        values.append(1 if payment_filter == "Paid" else 0)
+
+    if overdue_only:
+
+        # Same rule get_overdue_days() uses: Issued + DueDate in the past.
+        query += " AND IssueTransaction.Status='Issued' AND IssueTransaction.DueDate < %s"
+        values.append(today.isoformat())
+
+    sort_column = BORROW_SORT_COLUMNS[sort_by]
+    sql_dir = "DESC" if sort_dir == "desc" else "ASC"
+
+    query += f" ORDER BY {sort_column} {sql_dir}"
+
+    cur.execute(query, values)
+
+    raw_rows = cur.fetchall()
+
+    transactions = []
+
+    for row in raw_rows:
+
+        (
+            transaction_id, copy_id, book_id, book_name,
+            member_id, member_name, issue_date, due_date,
+            actual_return_date, status, stored_fine, fine_paid,
+            purchase_price
+        ) = row
+
+        if status == "Issued":
+
+            overdue_days = get_overdue_days(due_date, today)
+            fine_amount = calculate_fine(due_date, today, purchase_price)
+            is_projected_fine = True
+
+        else:
+
+            overdue_days = get_overdue_days(due_date, actual_return_date)
+            fine_amount = float(stored_fine or 0)
+            is_projected_fine = False
+
+        transactions.append({
+            "transaction_id": transaction_id,
+            "copy_id": copy_id,
+            "book_id": book_id,
+            "book_name": book_name,
+            "member_id": member_id,
+            "member_name": member_name,
+            "issue_date": issue_date,
+            "due_date": due_date,
+            "actual_return_date": actual_return_date,
+            "status": status,
+            "overdue_days": overdue_days,
+            "is_overdue": status == "Issued" and overdue_days > 0,
+            "fine_amount": fine_amount,
+            "is_projected_fine": is_projected_fine,
+            "fine_paid": fine_paid,
+        })
+
+    return render_template(
+        "borrow_books.html",
+        total_issued=total_issued,
+        total_overdue=total_overdue,
+        returned_today=returned_today,
+        outstanding_fine=outstanding_fine,
+        active_members=active_members,
+        available_copies=available_copies,
+        borrow_limit=BORROW_LIMIT,
+        loan_period_days=LOAN_PERIOD_DAYS,
+        transactions=transactions,
+        showing_count=len(transactions),
+        search=search,
+        search_by=search_by,
+        status_filter=status_filter,
+        payment_filter=payment_filter,
+        overdue_only=overdue_only,
+        sort_links=build_borrow_sort_links(sort_by, sort_dir),
+        current_sort=sort_by,
+        current_dir=sort_dir,
+        today=today.isoformat()
+    )
 
 
+def get_active_members_with_issue_counts():
+    cur.execute("""
+        SELECT
+            Member.MemberID,
+            Member.MemberName,
+            COUNT(IssueTransaction.TransactionID) AS issued_count
+        FROM Member
+        LEFT JOIN IssueTransaction
+            ON Member.MemberID = IssueTransaction.MemberID
+            AND IssueTransaction.Status='Issued'
+        WHERE Member.IsActive=1
+        GROUP BY Member.MemberID, Member.MemberName
+        ORDER BY Member.MemberName
+    """)
+    return cur.fetchall()
+
+
+def get_available_copies_for_issue():
+    cur.execute("""
+        SELECT
+            BookCopy.CopyID,
+            Book.BookName,
+            BookCopy.BookID
+        FROM BookCopy
+        JOIN Book
+            ON BookCopy.BookID = Book.BookID
+        WHERE BookCopy.Status='Available'
+        ORDER BY Book.BookName
+    """)
+    return cur.fetchall()
 
 # ---------------- MEMBER MANAGEMENT ----------------
 
