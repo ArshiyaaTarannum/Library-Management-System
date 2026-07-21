@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Library Borrow / Return Management</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Borrow / Return Management</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="flash-message">
+
+        {{ message }}
+
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
+    <p class="subtitle">
+
+        Issue books to members, process returns, and track overdue fines.
+
+    </p>
+
+    <!-- DASHBOARD STATS -->
+
+    <div class="dashboard">
+
+        <div class="dashboard-card">
+            <h2>📖 Total Issued</h2>
+            <p style="font-size:36px;font-weight:700;color:#0d6efd;">
+                {{ total_issued }}
+            </p>
+            <p>Copies currently checked out.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>⏰ Overdue</h2>
+            <p style="font-size:36px;font-weight:700;color:#dc3545;">
+                {{ total_overdue }}
+            </p>
+            <p>Issued copies past their Due Date.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>✅ Returned Today</h2>
+            <p style="font-size:36px;font-weight:700;color:#198754;">
+                {{ returned_today }}
+            </p>
+            <p>Copies returned so far today.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>💰 Outstanding Fine</h2>
+            <p style="font-size:36px;font-weight:700;color:#dc3545;">
+                Rs {{ "%.2f"|format(outstanding_fine|float) }}
+            </p>
+            <p>Unpaid fines on returned copies.</p>
+        </div>
+
+    </div>
+
+    <!-- ISSUE BOOK FORM -->
+
+    <div class="container">
+
+        <h2 style="margin-bottom:15px;">Issue a Book</h2>
+
+        <form id="issue-form" action="{{ url_for('issue_book') }}" method="POST" autocomplete="off">
+
+            <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
+
+            <label>Select Member</label>
+
+            <select name="member_id" required>
+
+                <option value="">Select Member</option>
+
+                {% for m in active_members %}
+                <option value="{{ m[0] }}">
+                    {{ m[0] }} - {{ m[1] }} ({{ m[2] }}/{{ borrow_limit }} issued)
+                </option>
+                {% endfor %}
+
+            </select>
+
+            <label>Search Copy</label>
+
+            <input type="text" id="copy-filter" placeholder="Type a Copy ID or Book Name to filter..."
+                oninput="filterCopyOptions()">
+
+            <label>Select Available Copy</label>
+
+            <select name="copy_id" id="copy-select" required>
+
+                <option value="">Select Copy</option>
+
+                {% for c in available_copies %}
+                <option value="{{ c[0] }}" data-search="{{ c[0]|lower }} {{ c[2]|lower }}">
+                    {{ c[0] }} - {{ c[1] }} - {{ c[2] }}
+                </option>
+                {% endfor %}
+
+            </select>
+
+            <p class="hint-text">
+                Issue Date will be today. Due Date is automatically calculated as
+                today + {{ loan_period_days }} days.
+            </p>
+
+            <button type="submit" class="action-btn issue-btn">
+
+                Issue Book
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- SEARCH & FILTERS -->
+
+    <div class="top-search">
+
+        <button id="search-icon" class="search-icon">
+
+            🔍
+
+        </button>
+
+    </div>
+
+    <div id="search-box" class="search-box">
+
+        <form action="{{ url_for('borrow_books') }}" method="GET">
+
+            <select name="search_by">
+
+                <option value="book_name" {% if not search_by or search_by=='book_name' %}selected{% endif %}>
+                    Book Name
+                </option>
+
+                <option value="transaction_id" {% if search_by=='transaction_id' %}selected{% endif %}>
+                    Transaction ID
+                </option>
+
+                <option value="copy_id" {% if search_by=='copy_id' %}selected{% endif %}>
+                    Copy ID
+                </option>
+
+                <option value="book_id" {% if search_by=='book_id' %}selected{% endif %}>
+                    Book ID
+                </option>
+
+                <option value="member_id" {% if search_by=='member_id' %}selected{% endif %}>
+                    Member ID
+                </option>
+
+                <option value="member_name" {% if search_by=='member_name' %}selected{% endif %}>
+                    Member Name
+                </option>
+
+            </select>
+
+            <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+
+            <div class="inventory-filters">
+
+                <select name="status_filter">
+
+                    <option value="">All Statuses</option>
+
+                    <option value="Issued" {% if status_filter=='Issued' %}selected{% endif %}>Issued</option>
+
+                    <option value="Returned" {% if status_filter=='Returned' %}selected{% endif %}>Returned</option>
+
+                </select>
+
+                <select name="payment_filter">
+
+                    <option value="">All Payment Status</option>
+
+                    <option value="Paid" {% if payment_filter=='Paid' %}selected{% endif %}>Paid</option>
+
+                    <option value="Unpaid" {% if payment_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
+
+                </select>
+
+                <label class="radio-inline">
+                    <input type="checkbox" name="overdue_only" value="1" {% if overdue_only %}checked{% endif %}>
+                    Overdue Only
+                </label>
+
+            </div>
+
+            <button type="submit">
+
+                Search
+
+            </button>
+
+            <a href="{{ url_for('borrow_books') }}" class="clear-btn">
+
+                Clear
+
+            </a>
+
+        </form>
+
+    </div>
+
+    <p class="results-count">
+        Showing {{ showing_count }} transaction(s)
+    </p>
+
+    <!-- BORROWED BOOKS TABLE -->
+
+    <table class="category-table">
+
+        <tr>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['transaction_id'] }}">
+                    Transaction ID {% if current_sort == 'transaction_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
+                    endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['copy_id'] }}">
+                    Copy ID {% if current_sort == 'copy_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['book_id'] }}">
+                    Book ID {% if current_sort == 'book_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['book_name'] }}">
+                    Book Name {% if current_sort == 'book_name' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['member_id'] }}">
+                    Member ID {% if current_sort == 'member_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['member_name'] }}">
+                    Member Name {% if current_sort == 'member_name' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif
+                    %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['issue_date'] }}">
+                    Issue Date {% if current_sort == 'issue_date' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif
+                    %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['due_date'] }}">
+                    Due Date {% if current_sort == 'due_date' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                Days Remaining / Overdue
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['fine'] }}">
+                    Fine {% if current_sort == 'fine' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
+                </a>
+            </th>
+
+            <th>
+                <a class="sort-link" href="{{ sort_links['payment_status'] }}">
+                    Payment Status {% if current_sort == 'payment_status' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
+                    endif %}
+                </a>
+            </th>
+
+            <th>
+                Action
+            </th>
+
+        </tr>
+
+
+        {% if transactions %}
+
+
+        {% for txn in transactions %}
+
+        <tr class="{% if txn.is_overdue %}overdue-row{% endif %}">
+
+            <td>{{ txn.transaction_id }}</td>
+
+            <td>{{ txn.copy_id }}</td>
+
+            <td>{{ txn.book_id }}</td>
+
+            <td>{{ txn.book_name }}</td>
+
+            <td>{{ txn.member_id }}</td>
+
+            <td>{{ txn.member_name }}</td>
+
+            <td>{{ txn.issue_date }}</td>
+
+            <td>{{ txn.due_date }}</td>
+
+            <td>
+
+                {% if txn.status == 'Issued' %}
+
+                {% if txn.is_overdue %}
+                <span class="badge badge-damaged">{{ txn.overdue_days }} day(s) overdue</span>
+                {% else %}
+                <span class="badge badge-available">On time</span>
+                {% endif %}
+
+                {% else %}
+
+                <span class="no-action-text">
+                    Returned {% if txn.overdue_days > 0 %}({{ txn.overdue_days }} day(s) late){% endif %}
+                </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                Rs {{ "%.2f"|format(txn.fine_amount|float) }}
+                {% if txn.is_projected_fine and txn.fine_amount > 0 %}
+                <span class="no-action-text">(projected)</span>
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if txn.status == 'Issued' %}
+
+                <span class="no-action-text">—</span>
+
+                {% elif txn.fine_amount <= 0 %} <span class="no-action-text">No Fine</span>
+
+                    {% elif txn.fine_paid %}
+
+                    <span class="badge badge-available">Paid</span>
+
+                    {% else %}
+
+                    <span class="badge badge-damaged">Unpaid</span>
+
+                    <button type="button" class="action-btn pay-btn"
+                        onclick="togglePayForm('{{ txn.transaction_id }}')">
+                        Pay Fine
+                    </button>
+
+                    <form id="pay-form-{{ txn.transaction_id }}" action="{{ url_for('pay_fine') }}" method="POST"
+                        class="inline-action-form pay-form">
+
+                        <input type="hidden" name="transaction_id" value="{{ txn.transaction_id }}">
+                        <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
+
+                        <select name="payment_mode" required>
+                            <option value="">Mode</option>
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Card">Card</option>
+                        </select>
+
+                        <input type="date" name="payment_date" value="{{ today }}" required>
+
+                        <button type="submit" class="action-btn issue-btn">
+                            Confirm
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if txn.status == 'Issued' %}
+
+                <form action="{{ url_for('return_book') }}" method="POST" class="inline-action-form"
+                    onsubmit="return confirm('Mark Copy {{ txn.copy_id }} as returned?')">
+
+                    <input type="hidden" name="copy_id" value="{{ txn.copy_id }}">
+                    <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
+
+                    <button type="submit" class="action-btn return-btn">
+                        Return
+                    </button>
+
+                </form>
+
+                {% else %}
+
+                <span class="no-action-text">—</span>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+
+        {% else %}
+
+
+        <tr>
+
+            <td colspan="12">
+
+                No borrow transactions found.
+
+            </td>
+
+        </tr>
+
+
+        {% endif %}
+
+
+    </table>
+
+    <!-- NAVIGATION -->
+
+    <div class="navigation-buttons">
+
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('add_books') }}" class="nav-btn">
+            Book Management
+        </a>
+
+        <a href="{{ url_for('category') }}" class="nav-btn">
+            Category Management
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-btn">
+            Inventory
+        </a>
+
+        <a href="{{ url_for('members') }}" class="nav-btn">
+            Member Management
+        </a>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+
+</html>
