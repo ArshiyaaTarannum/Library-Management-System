@@ -42,8 +42,6 @@ setTimeout(function () {
 
 // ================= BOOK =================
 
-// ================= BOOK =================
-
 function loadBook(
     id,
     name,
@@ -84,10 +82,7 @@ function loadBook(
     document.getElementById("purchase_price").value = purchasePrice;
 
 
-    // Editing a Book's details never creates or changes BookCopy records,
-    // so the Total Copies field and the whole copy-allocation workflow
-    // are hidden while editing (see the "add-only" elements in
-    // add_books.html and setAddOnlyVisible() below).
+
     setAddOnlyVisible(false);
 
 
@@ -112,30 +107,16 @@ function resetBookForm() {
     document.getElementById("entry_date").value =
         new Date().toISOString().split("T")[0];
 
-    // static/script.js is never passed through Jinja, so the next Book ID
-    // has to come from the data-next-id attribute the template already
-    // renders onto this field, not from "{{ next_book_id }}" written here.
+
     const displayBookId = document.getElementById("display_book_id");
     displayBookId.value = displayBookId.dataset.nextId;
 
-    // Back to "Add" mode: bring back Total Copies + the allocation workflow,
-    // and clear out whatever groups/selection were previously built.
+
     setAddOnlyVisible(true);
     resetCopyAllocationUI();
 
 }
 
-// ================= ADD BOOK: COPY ALLOCATION WORKFLOW =================
-//
-// Handles Step 2 of the Add Book form: after Total Copies is entered,
-// the librarian is asked whether every copy shares the same condition.
-//   - Yes -> one common Shelf/Condition/Remark applied to all copies.
-//   - No  -> repeatable grouped blocks, validated to sum exactly to
-//            Total Copies before the form can be submitted.
-// The same mechanism serves both small (<=25) and large (>25) batches;
-// past 25 copies a hint simply recommends grouping, nothing else changes.
-
-// Must stay in sync with VALID_CONDITIONS in app.py.
 const CONDITION_OPTIONS = ["Excellent", "Good", "Fair", "Worn", "Damaged", "Other"];
 
 function buildOptionsHTML(values, placeholder) {
@@ -311,8 +292,6 @@ function initAddBookWorkflow() {
     const addGroupBtn = document.getElementById("add-group-btn");
     const copyGroupsField = document.getElementById("copy_groups");
 
-    // Populate the common-form dropdowns once, from the same option
-    // lists used to build every dynamically created group row.
 
     const commonCondition = document.getElementById("common_condition");
     commonCondition.innerHTML = `
@@ -351,8 +330,7 @@ function initAddBookWorkflow() {
         updateAllocationSummary();
     });
 
-    // Event delegation: catches quantity changes on every group row,
-    // including ones added later, without re-binding listeners each time.
+
     groupList.addEventListener("input", function (e) {
         if (e.target.classList.contains("group-quantity")) {
             updateAllocationSummary();
@@ -361,8 +339,7 @@ function initAddBookWorkflow() {
 
     bookForm.addEventListener("submit", function (e) {
 
-        // Editing an existing book never touches BookCopy records -
-        // let it submit as a normal Book update.
+
         if (bookForm.action.indexOf("/update_book") !== -1) {
             return;
         }
@@ -441,6 +418,15 @@ function initAddBookWorkflow() {
     });
 
     refreshLargeBatchHint();
+}
+function togglePayForm(transactionId) {
+
+    const form = document.getElementById("pay-form-" + transactionId);
+
+    if (form) {
+        form.classList.toggle("visible");
+    }
+
 }
 
 document.addEventListener("DOMContentLoaded", initAddBookWorkflow);
