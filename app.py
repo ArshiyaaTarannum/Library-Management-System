@@ -13,7 +13,7 @@ VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
 VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
 VALID_SHELF_STATUS = {"Active", "Inactive"}
 
-
+VALID_PAYMENT_MODES = {"Cash", "UPI", "Card"}
 INVENTORY_SORT_COLUMNS = {
     "copy_id": "BookCopy.CopyID",
     "book_id": "BookCopy.BookID",
@@ -1175,6 +1175,24 @@ def generate_transaction_id():
     return f"TXN{number:06d}"
 
 
+def generate_payment_id():
+
+    cur.execute("""
+        SELECT PaymentID
+        FROM FinePayment
+        ORDER BY PaymentID DESC
+        LIMIT 1
+    """)
+
+    last_payment = cur.fetchone()
+
+    if last_payment is None:
+        return "PAY000001"
+
+    number = int(last_payment[0][3:]) + 1
+    return f"PAY{number:06d}"
+
+
 def get_active_issue_count(member_id):
 
     cur.execute("""
@@ -1397,6 +1415,7 @@ def inventory():
 def borrow_books():
 
     return render_template("borrow_books.html")
+
 
 
 # ---------------- MEMBER MANAGEMENT ----------------
@@ -1762,7 +1781,6 @@ def issue_book():
 
 @app.route("/return_book", methods=["POST"])
 def return_book():
-
     copy_id = request.form.get("copy_id", "").strip()
     next_url = request.form.get("next") or url_for("inventory")
 
@@ -1849,8 +1867,6 @@ def return_book():
 
     return redirect(next_url)
 
-# ---------------- BORROWING POLICY ----------------
-
 
 # ---------------- LIBRARY RULES ----------------
 
@@ -1863,6 +1879,102 @@ def library_rules():
         loan_days=LOAN_PERIOD_DAYS
     )
 
+# ---------------- FINE PAYMENT ----------------
+
+
+@app.route("/pay_fine", methods=["POST"])
+def pay_fine():
+
+    transaction_id = request.form.get("transaction_id", "").strip()
+    payment_mode = request.form.get("payment_mode", "").strip()
+    payment_date = request.form.get("payment_date", "").strip()
+    next_url = request.form.get("next") or url_for("borrow_books")
+
+    if not transaction_id or not payment_mode or not payment_date:
+
+        flash("Please select a Payment Mode and Payment Date.")
+        return redirect(next_url)
+
+    if payment_mode not in VALID_PAYMENT_MODES:
+
+        flash("Invalid Payment Mode.")
+        return redirect(next_url)
+
+    cur.execute("""
+        SELECT FineAmount, FinePaid, Status
+        FROM IssueTransaction
+        WHERE TransactionID=%s
+    """, (transaction_id,))
+
+    txn_row = cur.fetchone()
+
+    if txn_row is None:
+
+        flash("No such Transaction exists.")
+        return redirect(next_url)
+
+    fine_amount, fine_paid, status = txn_row
+
+    if status != "Returned":
+
+        flash("Fine can only be paid on a Returned transaction.")
+        return redirect(next_url)
+
+    if fine_paid:
+
+        flash("This fine has already been paid.")
+        return redirect(next_url)
+
+    if not fine_amount or float(fine_amount) <= 0:
+
+        flash("There is no outstanding fine on this transaction.")
+        return redirect(next_url)
+
+    payment_id = generate_payment_id()
+
+    try:
+
+        cur.execute("""
+            INSERT INTO FinePayment
+            (
+                PaymentID,
+                TransactionID,
+                AmountPaid,
+                PaymentMode,
+                PaymentDate
+            )
+            VALUES
+            (
+                %s,%s,%s,%s,%s
+            )
+        """, (
+            payment_id,
+            transaction_id,
+            fine_amount,
+            payment_mode,
+            payment_date
+        ))
+
+        cur.execute("""
+            UPDATE IssueTransaction
+            SET FinePaid=1
+            WHERE TransactionID=%s
+        """, (transaction_id,))
+
+        conn.commit()
+
+        flash(
+            f"Fine of Rs {float(fine_amount):.2f} marked as Paid via {payment_mode}.")
+
+    except mysql.connector.Error as e:
+
+        conn.rollback()
+
+        print(e)
+
+        flash("Unable to record the fine payment.")
+
+    return redirect(next_url)
 # ---------------- RUN FLASK ----------------
 
 
