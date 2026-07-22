@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 from datetime import date, timedelta
-import mysql.connector
-from dotenv import load_dotenv
 import json
-import os
+from routes.category import category_bp
+from database import conn, cur
 
 
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
+app.register_blueprint(category_bp)
 
 VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
 VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
@@ -36,7 +36,7 @@ BORROW_SORT_COLUMNS = {
     "due_date": "IssueTransaction.DueDate",
     "status": "IssueTransaction.Status",
     "fine": "IssueTransaction.FineAmount",
-    "payment_status": "IssueTransaction.FinePaid",
+    "payment_status": "IssueTransaction.PaymentStatus",
 }
 # ---------------- LIBRARY SETTINGS ----------------
 
@@ -48,75 +48,12 @@ FINE_BASE_RATE = 5                 # ₹5/day for first month
 FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
 FINE_MONTH_LENGTH_DAYS = 30
 FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
-# DATABASE CONNECTION 
-load_dotenv()
-conn = mysql.connector.connect(
-    host=os.getenv("DB_HOST"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    database=os.getenv("DB_NAME")
-)
-cur = conn.cursor()
 
 # DASHBOARD PAGE 
 
 @app.route("/")
 def dashboard():
     return render_template("index.html")
-
-# CATEGORY PAGE 
-
-@app.route("/category")
-def category():
-
-    search = request.args.get("search", "").strip()
-
-    query = """
-        SELECT CategoryID, CategoryName
-        FROM Category
-        WHERE 1=1
-    """
-
-    values = []
-
-    if search:
-        query += """
-            AND (
-                CategoryID LIKE %s
-                OR CategoryName LIKE %s
-            )
-        """
-
-        values.append("%" + search + "%")
-        values.append("%" + search + "%")
-
-    query += " ORDER BY CategoryID"
-
-    cur.execute(query, values)
-    categories = cur.fetchall()
-
-    # Generate next Category ID
-
-    cur.execute("""
-        SELECT CategoryID
-        FROM Category
-        ORDER BY CategoryID DESC
-        LIMIT 1
-    """)
-
-    last_category = cur.fetchone()
-
-    if last_category is None:
-        next_category_id = "CAT001"
-    else:
-        number = int(last_category[0][3:]) + 1
-        next_category_id = f"CAT{number:03d}"
-
-    return render_template(
-        "category.html",
-        categories=categories,
-        next_category_id=next_category_id
-    )
 
 # ADD CATEGORY
 
@@ -246,15 +183,15 @@ def update_book():
     purchase_price = request.form["purchase_price"]
 
     if (
-        not book_name or
-        not author or
-        not category_id or
-        not publication or
-        not publication_date or
-        not entry_date or
-        not language or
-        not edition or
-        not purchase_price
+        not book_name
+        or not author
+        or not category_id
+        or not publication
+        or not publication_date
+        or not entry_date
+        or not language
+        or not edition
+        or not purchase_price
     ):
 
         flash("Please fill all fields.")
@@ -1458,12 +1395,11 @@ def borrow_books():
     cur.execute("""
         SELECT COALESCE(SUM(FineAmount), 0)
         FROM IssueTransaction
-        WHERE Status='Returned' AND FinePaid=0
+        WHERE Status='Returned' AND PaymentStatus='Pending'
     """)
 
     outstanding_fine = cur.fetchone()[0]
 
-    # ---- Issue form data (reused, not re-queried per field) ----
 
     active_members = get_active_members_with_issue_counts()
     available_copies = get_available_copies_for_issue()
@@ -1483,7 +1419,7 @@ def borrow_books():
             IssueTransaction.ActualReturnDate,
             IssueTransaction.Status,
             IssueTransaction.FineAmount,
-            IssueTransaction.FinePaid,
+            IssueTransaction.PaymentStatus,
             Book.PurchasePrice
 
         FROM IssueTransaction
@@ -1528,10 +1464,9 @@ def borrow_books():
         query += " AND IssueTransaction.Status = %s"
         values.append(status_filter)
 
-    if payment_filter in ("Paid", "Unpaid"):
-        query += " AND IssueTransaction.FinePaid = %s"
-        values.append(1 if payment_filter == "Paid" else 0)
-
+    if payment_filter in ("Paid", "Pending", "Waived"):
+        query += " AND IssueTransaction.PaymentStatus=%s"
+        values.append(payment_filter)
     if overdue_only:
 
         # Same rule get_overdue_days() uses: Issued + DueDate in the past.
@@ -1554,7 +1489,7 @@ def borrow_books():
         (
             transaction_id, copy_id, book_id, book_name,
             member_id, member_name, issue_date, due_date,
-            actual_return_date, status, stored_fine, fine_paid,
+            actual_return_date, status, stored_fine, payment_status,
             purchase_price
         ) = row
 
@@ -1585,7 +1520,7 @@ def borrow_books():
             "is_overdue": status == "Issued" and overdue_days > 0,
             "fine_amount": fine_amount,
             "is_projected_fine": is_projected_fine,
-            "fine_paid": fine_paid,
+            "payment_status": payment_status,
         })
 
     return render_template(
@@ -1612,6 +1547,24 @@ def borrow_books():
     )
 
 
+def build_borrow_sort_links(current_sort, current_dir):
+
+    links = {}
+
+    for column in BORROW_SORT_COLUMNS:
+
+        args = request.args.to_dict()
+
+        if current_sort == column and current_dir == "asc":
+            args["dir"] = "desc"
+        else:
+            args["dir"] = "asc"
+
+        args["sort"] = column
+
+        links[column] = url_for("borrow_books", **args)
+
+    return links
 def get_active_members_with_issue_counts():
     cur.execute("""
         SELECT
@@ -1917,7 +1870,7 @@ def issue_book():
     # ---- Validate the member ----
 
     cur.execute("""
-        SELECT Active
+        SELECT IsActive
         FROM Member
         WHERE MemberID=%s
     """, (member_id,))
@@ -2126,7 +2079,10 @@ def pay_fine():
         return redirect(next_url)
 
     cur.execute("""
-        SELECT FineAmount, FinePaid, Status
+        SELECT 
+        FineAmount,
+        PaymentStatus, 
+        Status
         FROM IssueTransaction
         WHERE TransactionID=%s
     """, (transaction_id,))
@@ -2138,14 +2094,14 @@ def pay_fine():
         flash("No such Transaction exists.")
         return redirect(next_url)
 
-    fine_amount, fine_paid, status = txn_row
+    fine_amount, payment_status, status = txn_row
 
     if status != "Returned":
 
         flash("Fine can only be paid on a Returned transaction.")
         return redirect(next_url)
 
-    if fine_paid:
+    if payment_status == "Paid":
 
         flash("This fine has already been paid.")
         return redirect(next_url)
@@ -2182,7 +2138,7 @@ def pay_fine():
 
         cur.execute("""
             UPDATE IssueTransaction
-            SET FinePaid=1
+            SET PaymentStatus='Paid'
             WHERE TransactionID=%s
         """, (transaction_id,))
 
