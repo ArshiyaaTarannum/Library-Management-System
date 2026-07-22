@@ -53,7 +53,7 @@
 
     <div id="search-box" class="search-box">
 
-        <form action="{{ url_for('category') }}" method="GET">
+        <form action="{{ url_for('category.category') }}" method="GET">
 
             <input type="text" name="search" placeholder="Search Category..."
                 value="{{ request.args.get('search','') }}">
@@ -64,7 +64,7 @@
 
             </button>
 
-            <a href="{{ url_for('category') }}" class="clear-btn">
+            <a href="{{ url_for('category.category') }}" class="clear-btn">
 
                 Clear
 
@@ -78,7 +78,7 @@
 
     <div class="container">
 
-        <form id="category-form" action="{{ url_for('add_category') }}" method="POST" autocomplete="off">
+        <form id="category-form" action="{{ url_for('category.add_category') }}" method="POST" autocomplete="off">
 
             <input type="hidden" name="category_id" id="category_id">
 
@@ -146,7 +146,7 @@
 
             <td>
 
-                <a href="{{ url_for('delete_category', category_id=category[0]) }}" class="delete-btn"
+                <a href="{{ url_for('category.delete_category', category_id=category[0]) }}" class="delete-btn"
                     onclick="return confirm('Delete this category?')">
 
                     Delete
