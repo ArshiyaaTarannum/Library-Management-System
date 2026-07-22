@@ -56,7 +56,6 @@ FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
 def dashboard():
     return render_template("index.html")
 
-
 @app.route("/delete_book/<book_id>")
 def delete_book(book_id):
 
@@ -76,8 +75,6 @@ def delete_book(book_id):
         flash("Unable to delete the book.")
 
     return redirect(url_for("add_books"))
-
-
 
 @app.route("/update_book", methods=["POST"])
 def update_book():
@@ -999,7 +996,6 @@ def delete_shelf(shelf_id):
 
     return redirect(url_for("shelf"))
 
-
 def generate_member_id():
 
     cur.execute("""
@@ -1016,7 +1012,6 @@ def generate_member_id():
 
     number = int(last_member[0][3:]) + 1
     return f"MEM{number:04d}"
-
 
 def generate_transaction_id():
 
@@ -1035,7 +1030,6 @@ def generate_transaction_id():
     number = int(last_transaction[0][3:]) + 1
     return f"TXN{number:06d}"
 
-
 def generate_payment_id():
 
     cur.execute("""
@@ -1053,7 +1047,6 @@ def generate_payment_id():
     number = int(last_payment[0][3:]) + 1
     return f"PAY{number:06d}"
 
-
 def get_active_issue_count(member_id):
 
     cur.execute("""
@@ -1063,7 +1056,6 @@ def get_active_issue_count(member_id):
     """, (member_id,))
 
     return cur.fetchone()[0]
-
 
 def get_overdue_days(due_date, as_of_date=None):
 
@@ -1075,7 +1067,6 @@ def get_overdue_days(due_date, as_of_date=None):
     delta_days = (as_of_date - due_date).days
 
     return max(delta_days, 0)
-
 
 def calculate_fine(due_date, return_date, purchase_price):
 
@@ -1102,7 +1093,6 @@ def calculate_fine(due_date, return_date, purchase_price):
     cap = float(purchase_price or 0) + FINE_CAP_BUFFER
 
     return round(min(fine, cap), 2)
-
 
 @app.route("/inventory")
 def inventory():
@@ -1458,7 +1448,6 @@ def borrow_books():
         today=today.isoformat()
     )
 
-
 def build_borrow_sort_links(current_sort, current_dir):
 
     links = {}
@@ -1493,7 +1482,6 @@ def get_active_members_with_issue_counts():
         ORDER BY Member.MemberName
     """)
     return cur.fetchall()
-
 
 def get_available_copies_for_issue():
     cur.execute("""
@@ -1593,7 +1581,6 @@ def members():
         search_by=search_by
     )
 
-
 @app.route("/add_member", methods=["POST"])
 def add_member():
 
@@ -1655,7 +1642,6 @@ def add_member():
 
     return redirect(url_for("members"))
 
-
 @app.route("/update_member", methods=["POST"])
 def update_member():
 
@@ -1699,7 +1685,6 @@ def update_member():
 
     return redirect(url_for("members"))
 
-
 @app.route("/deactivate_member/<member_id>")
 def deactivate_member(member_id):
 
@@ -1728,7 +1713,6 @@ def deactivate_member(member_id):
 
     return redirect(url_for("members"))
 
-
 @app.route("/reactivate_member/<member_id>")
 def reactivate_member(member_id):
 
@@ -1743,7 +1727,6 @@ def reactivate_member(member_id):
     flash("Member reactivated.")
 
     return redirect(url_for("members"))
-
 
 # ---------------- ISSUE BOOK ----------------
 
@@ -1867,7 +1850,6 @@ def issue_book():
 
     return redirect(next_url)
 
-
 # ---------------- RETURN BOOK ----------------
 
 @app.route("/return_book", methods=["POST"])
@@ -1958,7 +1940,6 @@ def return_book():
 
     return redirect(next_url)
 
-
 # ---------------- LIBRARY RULES ----------------
 
 @app.route("/library_rules")
@@ -1971,7 +1952,6 @@ def library_rules():
     )
 
 # ---------------- FINE PAYMENT ----------------
-
 
 @app.route("/pay_fine", methods=["POST"])
 def pay_fine():
