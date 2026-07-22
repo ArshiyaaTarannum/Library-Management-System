@@ -138,6 +138,7 @@ def update_book():
     flash("Book Updated Successfully!")
 
     return redirect(url_for("add_books"))
+
 # ADD BOOK PAGE
 
 @app.route("/add_books")
@@ -1476,6 +1477,7 @@ def build_borrow_sort_links(current_sort, current_dir):
         links[column] = url_for("borrow_books", **args)
 
     return links
+
 def get_active_members_with_issue_counts():
     cur.execute("""
         SELECT
