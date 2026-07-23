@@ -755,11 +755,12 @@ function toggleBookLimit() {
     const input = document.getElementById("max_books");
 
     input.disabled = unlimited;
+    input.required = !unlimited;
 
     if (unlimited) {
+        input.value = "";
         input.title = "Unlimited borrowing enabled.";
-    }
-    else {
+    } else {
         input.title = "";
     }
 
@@ -780,11 +781,12 @@ function toggleLoan() {
     const input = document.getElementById("loan_days");
 
     input.disabled = unlimited;
+    input.required = !unlimited;
 
     if (unlimited) {
+        input.value = "";
         input.title = "No due date will be assigned.";
-    }
-    else {
+    } else {
         input.title = "";
     }
 
@@ -805,11 +807,12 @@ function toggleMembership() {
     const input = document.getElementById("membership_months");
 
     input.disabled = lifetime;
+    input.required = !lifetime;
 
     if (lifetime) {
+        input.value = "";
         input.title = "Membership never expires.";
-    }
-    else {
+    } else {
         input.title = "";
     }
 
@@ -822,27 +825,36 @@ function toggleMembership() {
 
 function toggleRenewal() {
 
-    const selected = document.querySelector(
-        'input[name="renewal_type"]:checked'
-    );
+    const selected =
+        document.querySelector(
+            'input[name="renewal_type"]:checked'
+        );
 
-    const input = document.getElementById("max_renewals");
+    const input =
+        document.getElementById("max_renewals");
 
     if (!selected || !input) return;
 
     if (selected.value === "limited") {
 
         input.disabled = false;
+        input.required = true;
         input.title = "";
 
-    } else if (selected.value === "unlimited") {
+    }
+    else if (selected.value === "unlimited") {
 
         input.disabled = true;
+        input.required = false;
+        input.value = "";
         input.title = "Unlimited renewals enabled.";
 
-    } else {
+    }
+    else {
 
         input.disabled = true;
+        input.required = false;
+        input.value = "";
         input.title = "Renewals are disabled.";
 
     }
