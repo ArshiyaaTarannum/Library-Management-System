@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Library Policy</title>
+
+</head>
+
+<body>
+
+<h1>Library Policy</h1>
+
+<form action="{{ url_for('policy.update_policy') }}" method="POST">
+
+<label>Library Name</label>
+
+<input
+type="text"
+name="library_name"
+value="{{ policy[1] }}">
+
+<br><br>
+
+<label>Maximum Books</label>
+
+<input
+type="number"
+name="max_books"
+value="{{ policy[2] }}">
+
+<br><br>
+
+<label>Loan Period</label>
+
+<input
+type="number"
+name="loan_days"
+value="{{ policy[3] }}">
+
+<br><br>
+
+<label>Membership Duration</label>
+
+<input
+type="number"
+name="membership_months"
+value="{{ policy[4] }}">
+
+<br><br>
+
+<label>Fine Base Rate</label>
+
+<input
+type="number"
+step="0.01"
+name="fine_rate"
+value="{{ policy[5] }}">
+
+<br><br>
+
+<label>Increase Every (Days)</label>
+
+<input
+type="number"
+name="increase_days"
+value="{{ policy[6] }}">
+
+<br><br>
+
+<label>Increase Rate</label>
+
+<input
+type="number"
+step="0.01"
+name="increase_rate"
+value="{{ policy[7] }}">
+
+<br><br>
+
+<label>Fine Cap Buffer</label>
+
+<input
+type="number"
+step="0.01"
+name="fine_cap"
+value="{{ policy[8] }}">
+
+<br><br>
+
+<label>
+
+<input
+type="checkbox"
+name="allow_renewal"
+{% if policy[9] %}checked{% endif %}>
+
+Allow Renewal
+
+</label>
+
+<br><br>
+
+<label>Maximum Renewals</label>
+
+<input
+type="number"
+name="max_renewals"
+value="{{ policy[10] }}">
+
+<br><br>
+
+<button type="submit">
+
+Save Policy
+
+</button>
+
+</form>
+
+</body>
+
+</html>
