@@ -18,7 +18,6 @@ def library_policy():
     return render_template(
         "library_policy.html",
         policy=policy
-    
     )
 
 @policy_bp.route("/update_policy", methods=["POST"])
@@ -30,7 +29,13 @@ def update_policy():
 
     loan_days = request.form["loan_days"]
 
-    membership_months = request.form["membership_months"]
+    if request.form.get("lifetime_membership"):
+
+        membership_months = -1
+
+    else:
+
+        membership_months = int(request.form["membership_months"])
 
     fine_rate = request.form["fine_rate"]
 
