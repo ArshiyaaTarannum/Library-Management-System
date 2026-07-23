@@ -14,206 +14,227 @@
 
 <body>
 
-<h1>Library Policy</h1>
+    <h1>Library Policy</h1>
+
+    <p class="subtitle">
+        Configure how your library operates. These settings are automatically
+        used throughout the Library Management System.
+        </p>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="flash-message">
+
+        {{ message }}
+
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
+    <form class="policy-form" action="{{ url_for('policy.update_policy') }}" method="POST">
+
+        <div class="policy-grid">
+
+            <!-- ================= Library Information ================= -->
+
+            <section class="settings-card">
+            
+                <h2>Library Information</h2>
+                <p class="card-subtitle">
+                    Configure the default borrowing rules used by your library.
+                </p>
+
+                <label>Library Name</label>
+
+                <input type="text" name="library_name" value="{{ policy[1] }}" required>
+                
+                <label>Borrow Limit</label>
+                
+                <div class="radio-group">
+                
+                    <label>
+                        <input type="radio" name="book_limit_type" value="limited" {% if policy[2] !=-1 %}checked{% endif %}>
+                
+                        Limited
+                    </label>
+                
+                    <label>
+                        <input type="radio" name="book_limit_type" value="unlimited" {% if policy[2]==-1 %}checked{% endif %}>
+                
+                        Unlimited
+                    </label>
+                
+                </div>
+                
+                <div id="book-limit-box">
 
-<p class="subtitle">
-    Configure how your library operates. These settings automatically affect
-    borrowing, memberships, fines and renewals throughout the system.
-</p>
+                    <label>Maximum Books Per Member</label>
 
-{% with messages = get_flashed_messages() %}
-{% if messages %}
+                    <input type="number" id="max_books" name="max_books" min="1" placeholder="Example: 4"
+                        value="{% if policy[2] == -1 %}4{% else %}{{ policy[2] }}{% endif %}">
 
-{% for message in messages %}
+                </div>
 
-<div class="flash-message">
+                <label>Loan Period</label>
+                
+                <div class="radio-group">
+                
+                    <label>
+                        <input type="radio" name="loan_type" value="limited" {% if policy[3] !=-1 %}checked{% endif %}>
+                
+                        Fixed Duration
+                    </label>
+                
+                    <label>
+                        <input type="radio" name="loan_type" value="unlimited" {% if policy[3]==-1 %}checked{% endif %}>
+                
+                        No Due Date
+                    </label>
 
-    {{ message }}
+                </div>
 
-</div>
+                <div id="loan-box">
+                
+                    <label>Loan Duration (Days)</label>
+                
+                    <input type="number" id="loan_days" name="loan_days" min="1" placeholder="Example: 14"
+                        value="{% if policy[3] == -1 %}14{% else %}{{ policy[3] }}{% endif %}">
+                
+                </div>
+                
+                </section>
 
-{% endfor %}
+            <!-- ================= Membership ================= -->
 
-{% endif %}
-{% endwith %}
+            <section class="settings-card">
 
-<form class="policy-form" action="{{ url_for('policy.update_policy') }}" method="POST">
+                <h2>Membership</h2>
+                
+                <p class="card-subtitle">
+                    Choose how long member accounts remain active.
+                </p>
+                
+                <div class="radio-group">
 
-    <!-- ================= Library ================= -->
+                    <label>
+                        <input type="radio" name="membership_type" value="limited" {% if policy[4] !=-1 %}checked{% endif %}>
 
-    <div class="settings-card">
+                        Fixed Duration
+                        </label>
 
-        <h2>🏛 Library Information</h2>
+                    <label>
+                        <input type="radio" name="membership_type" value="lifetime" {% if policy[4]==-1 %}checked{% endif %}>
 
-<label>Library Name</label>
+                        Lifetime Membership
+                    </label>
+                </div>
+                
+                <div id="membership-box">
 
-<input
-type="text"
-name="library_name"
-value="{{ policy[1] }}"
-required>
+                    <label>Membership Duration (Months)</label>
 
-<label>Maximum Books Per Member</label>
+                    <input type="number" id="membership_months" name="membership_months" min="1" placeholder="Example: 12"
+                        value="{% if policy[4] == -1 %}12{% else %}{{ policy[4] }}{% endif %}">
 
-<input
-type="number"
-name="max_books"
-min="1"
-value="{{ policy[2] }}"
-required>
+                </div>
 
-<label>Loan Period (Days)</label>
+            </section>
 
-<input
-type="number"
-name="loan_days"
-min="1"
-value="{{ policy[3] }}"
-required>
+            <!-- ================= Fine Policy ================= -->
 
-</div>
+            <section class="settings-card">
 
-<!-- ================= Membership ================= -->
+                <h2>Fine Policy</h2>
 
-<div class="settings-card">
+                <p class="card-subtitle">
+                    Configure automatic overdue fine calculation.
+                </p>
 
-    <h2>👥 Membership</h2>
+                <label>Base Fine (₹ per Day)</label>
 
-    <label>
+                <input type="number" step="0.01" name="fine_rate" value="{{ policy[5] }}">
 
-        <input type="checkbox" id="lifetime_membership" name="lifetime_membership" {% if policy[4]==-1 %}checked{% endif
-            %} onchange="toggleMembership()">
+                <label>Fine Increment Interval (Days)</label>
 
-        Lifetime Membership
+                <input type="number" name="increase_days" value="{{ policy[6] }}">
 
-    </label>
+                <label>Additional Fine (₹)</label>
 
-    <label>Membership Duration (Months)</label>
+                <input type="number" step="0.01" name="increase_rate" value="{{ policy[7] }}">
 
-<input
-type="number"
-id="membership_months"
-name="membership_months"
-min="1"
-value="{% if policy[4] == -1 %}12{% else %}{{ policy[4] }}{% endif %}">
+                <label>Maximum Fine (₹)</label>
 
-</div>
+                <input type="number" step="0.01" name="fine_cap" value="{{ policy[8] }}">
 
-<!-- ================= Fine ================= -->
+            </section>
 
-<div class="settings-card">
+            <!-- ================= Renewal Policy ================= -->
 
-<h2>💰 Fine Policy</h2>
+            <section class="settings-card">
 
-<label>Base Fine Rate (₹ / Day)</label>
+                <h2>Renewal Policy</h2>
 
-<input
-type="number"
-step="0.01"
-name="fine_rate"
-value="{{ policy[5] }}">
+                <p class="card-subtitle">
+                    Control whether borrowed books can be renewed.
+                </p>
 
-<label>Increase Every (Days)</label>
+                <div class="radio-group">
 
-<input
-type="number"
-name="increase_days"
-value="{{ policy[6] }}">
+                    <label>
 
-<label>Increase Rate (₹)</label>
+                        <input type="radio" name="renewal_type" value="none" {% if policy[9]==0 %}checked{% endif %}>
 
-<input
-type="number"
-step="0.01"
-name="increase_rate"
-value="{{ policy[7] }}">
+                        Renewal Not Allowed
 
-<label>Fine Cap Buffer (₹)</label>
+                    </label>
 
-<input
-type="number"
-step="0.01"
-name="fine_cap"
-value="{{ policy[8] }}">
+                    <label>
+                    
+                        <input type="radio" name="renewal_type" value="limited" {% if policy[9]==1 and policy[10] !=-1 %}checked{% endif %}>
 
-</div>
+                        Limited Renewal
 
-<!-- ================= Renewal ================= -->
+                    </label>
 
-<div class="settings-card">
+                    <label>
 
-    <h2>🔄 Renewal Policy</h2>
+                        <input type="radio" name="renewal_type" value="unlimited" {% if policy[10]==-1 %}checked{% endif %}>
 
-<label>
+                        Unlimited Renewal
 
-<input
-type="checkbox"
-id="allow_renewal"
-name="allow_renewal"
-{% if policy[9] %}checked{% endif %}
-onchange="toggleRenewal()">
+                    </label>
 
-Allow Renewal
+                </div>
 
-</label>
+                <div id="renewal-limit">
 
-<label>
+                    <label>Maximum Renewals</label>
 
-    <input type="checkbox" id="unlimited_renewals" name="unlimited_renewals" {% if policy[10]==-1 %}checked{% endif %}
-        onchange="toggleRenewal()">
+                    <input type="number" id="max_renewals" name="max_renewals" min="1" placeholder="Example: 2"
+                        value="{% if policy[10] == -1 %}2{% else %}{{ policy[10] }}{% endif %}">
 
-    Unlimited Renewals
+                </div>
 
-</label>
+            </section>
 
-<label>Maximum Renewals</label>
+        </div>
 
-<input
-type="number"
-id="max_renewals"
-name="max_renewals"
-min="1"
-value="{% if policy[10] == -1 %}1{% else %}{{ policy[10] }}{% endif %}">
+        <div class="save-container">
 
-</div>
+            <button class="save-btn" type="submit">
+                Save Library Policy
+            </button>
 
-<div class="save-container">
+        </div>
 
-<button class="save-btn" type="submit">
-
-Save Library Policy
-
-</button>
-
-</div>
-
-</form>
-
-<script>
-
-    function toggleRenewal() {
-
-        const allow = document.getElementById("allow_renewal").checked;
-        const unlimited = document.getElementById("unlimited_renewals").checked;
-        const input = document.getElementById("max_renewals");
-
-        document.getElementById("unlimited_renewals").disabled = !allow;
-        input.disabled = !allow || unlimited;
-
-    }
-
-    function toggleMembership() {
-
-        const lifetime = document.getElementById("lifetime_membership").checked;
-
-        document.getElementById("membership_months").disabled = lifetime;
-
-    }
-
-    toggleRenewal();
-    toggleMembership();
-
-</script>
+    </form>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
 
