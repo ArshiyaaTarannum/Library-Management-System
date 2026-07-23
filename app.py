@@ -1946,10 +1946,16 @@ def return_book():
 @app.route("/library_rules")
 def library_rules():
 
+    cur.execute("SELECT * FROM LibraryPolicy LIMIT 1")
+    policy = cur.fetchone()
+
+    if policy is None:
+        flash("Library policy has not been configured yet.")
+        return redirect(url_for("dashboard"))
+
     return render_template(
         "library_rules.html",
-        borrow_limit=BORROW_LIMIT,
-        loan_days=LOAN_PERIOD_DAYS
+        policy=policy
     )
 
 # ---------------- FINE PAYMENT ----------------
