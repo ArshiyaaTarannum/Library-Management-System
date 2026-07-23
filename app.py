@@ -5,10 +5,11 @@ import mysql.connector
 from routes.category import category_bp
 from database import conn, cur
 
-
+from routes.policy import policy_bp
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 app.register_blueprint(category_bp)
+app.register_blueprint(policy_bp)
 
 VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
 VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
