@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,7 +17,7 @@
     <h1>Library Borrowing Guidelines</h1>
 
     <p class="subtitle">
-        Please read the borrowing rules and fine policy before issuing any library material.
+        Please read the borrowing rules and library policies before borrowing any library material.
         </p>
 
     <div class="rules-container">
@@ -33,7 +32,19 @@
 
                 <li>Only active registered members may borrow books.</li>
 
-                <li>Membership must remain active throughout the borrowing period.</li>
+                {% if policy[4] == -1 %}
+                
+                <li>Membership is valid for a lifetime.</li>
+                
+                {% else %}
+                
+                <li>
+                    Membership remains valid for
+                    <strong>{{ policy[4] }}</strong>
+                    month(s).
+                </li>
+                
+                {% endif %}
 
             </ul>
 
@@ -47,13 +58,21 @@
 
             <ul>
 
-                <li>Maximum books allowed at one time:
-                    <strong>{{ borrow_limit }}</strong>
+                {% if policy[2] == -1 %}
+                
+                <li>Members may borrow an <strong>unlimited number of books.</strong></li>
+                
+                {% else %}
+                
+                <li>
+                    Maximum books allowed at one time:
+                    <strong>{{ policy[2] }}</strong>
                 </li>
 
+                {% endif %}
+
                 <li>No additional books can be issued after reaching the borrowing limit.</li>
-                
-                </ul>
+</ul>
 
         </div>
 
@@ -65,13 +84,53 @@
 
             <ul>
 
-                <li>Every issued book is borrowed for
-                    <strong>{{ loan_days }}</strong> days.
+                {% if policy[3] == -1 %}
+                
+                <li>Borrowed books do not have a fixed due date.</li>
+                
+                {% else %}
+                
+                <li>
+                    Every issued book is borrowed for
+                    <strong>{{ policy[3] }}</strong>
+                    day(s).
                 </li>
 
                 <li>The due date is generated automatically during issue.</li>
-                
+
                 <li>Books should be returned on or before the due date.</li>
+
+                {% endif %}
+                
+                </ul>
+                
+                </div>
+                
+                <!-- Renewal -->
+                
+                <div class="rule-card">
+                
+                    <h2>Renewal Policy</h2>
+                
+                    <ul>
+                
+                        {% if policy[9] == 0 %}
+                
+                        <li>Book renewal is not permitted.</li>
+                
+                        {% elif policy[10] == -1 %}
+                
+                        <li>Books may be renewed an unlimited number of times.</li>
+                
+                        {% else %}
+                
+                        <li>
+                            Books may be renewed up to
+                            <strong>{{ policy[10] }}</strong>
+                            time(s).
+                        </li>
+                
+                        {% endif %}
 
             </ul>
 
@@ -89,7 +148,11 @@
 
                 <li>Fine starts from the day after the due date.</li>
 
-                <li>The daily fine increases every 30 overdue days.</li>
+                <li>
+                    The daily fine increases every
+                    <strong>{{ policy[6] }}</strong>
+                    overdue day(s).
+                </li>
 
                 <li>Refer to the Fine Schedule below.</li>
 
@@ -127,9 +190,9 @@
 
                 <li>Do not write, underline or tear pages.</li>
 
-                <li>Return books only through the circulation desk.</li>
+                <li>Return books through the library circulation desk.</li>
 
-                <li>Keep your contact details updated.</li>
+                <li>Keep your membership information up to date.</li>
 
             </ul>
 
@@ -138,74 +201,105 @@
     </div>
 
     <br>
-    
+
     <h2 style="text-align:center;">Fine Schedule</h2>
-    
+
     <table class="category-table">
-    
+
         <tr>
-    
+
             <th>Overdue Period</th>
             <th>Fine Charged</th>
-    
+
         </tr>
-    
+
+        {% if policy[3] != -1 %}
+
         <tr>
-    
-            <td>Within {{ loan_days }} days</td>
+
+            <td>Within {{ policy[3] }} day(s)</td>
             <td>No Fine</td>
-    
+
         </tr>
-    
+
+        {% endif %}
+        
+        {% for level in range(3) %}
+
         <tr>
-    
-            <td>Days 1 – 30 overdue</td>
-            <td>₹5 per day</td>
-    
+
+            <td>
+            
+                Days {{ level * policy[6] + 1 }}
+                –
+                {{ (level + 1) * policy[6] }} overdue
+            
+            </td>
+            
+            <td>
+            
+                ₹{{ policy[5] + (level * policy[7]) }} per day
+            
+            </td>
+
         </tr>
-    
+
+        {% endfor %}
+
         <tr>
-    
-            <td>Days 31 – 60 overdue</td>
-            <td>₹10 per day</td>
-    
+
+            <td>
+            
+                Every additional {{ policy[6] }} overdue day(s)
+            
+            </td>
+            
+            <td>
+            
+                Daily fine increases by ₹{{ policy[7] }}
+            
+            </td>
+
         </tr>
-    
+
         <tr>
-    
-            <td>Days 61 – 90 overdue</td>
-            <td>₹15 per day</td>
-    
+
+            <td>
+            
+                <strong>Maximum Fine</strong>
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    Purchase Price of the Book + ₹{{ policy[8] }}
+
+                </strong>
+
+            </td>
+
         </tr>
-    
-        <tr>
-    
-            <td>Every additional 30 overdue days</td>
-            <td>Daily fine increases by ₹5</td>
-    
-        </tr>
-    
-        <tr>
-    
-            <td><strong>Maximum Fine</strong></td>
-            <td><strong>Purchase Price of the Book + ₹100</strong></td>
-    
-        </tr>
-    
+
     </table>
-    
+
     <br>
-    
+
     <div class="flash-message">
-    
-        <strong>Important Notice</strong><br><br>
-    
-        • Members with unpaid fines may not be allowed to borrow additional books.<br>
-    
-        • Members who have already reached the borrowing limit cannot issue another book until one is returned.<br>
-    
-        • Fine calculations are performed automatically by the Library Management System.
-    
+
+        <strong>Important Notice</strong>
+        
+        <br><br>
+        
+        • Members with unpaid fines may not be permitted to borrow additional books.<br>
+
+        • Borrowing requests exceeding the permitted limit will be declined automatically.<br>
+
+        • Fine calculations are performed automatically according to the library policy.<br>
+
+        • Library staff may refuse borrowing privileges if membership has expired.
+
     </div>
 
     <div class="navigation-buttons">
@@ -217,7 +311,7 @@
         <a href="{{ url_for('members') }}" class="nav-btn">
             Member Management
         </a>
-        
+
         <a href="{{ url_for('inventory') }}" class="nav-btn">
             Inventory
         </a>
