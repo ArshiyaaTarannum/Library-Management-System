@@ -19,7 +19,7 @@
     <p class="subtitle">
         Configure how your library operates. These settings are automatically
         used throughout the Library Management System.
-        </p>
+    </p>
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -44,108 +44,114 @@
             <!-- ================= Library Information ================= -->
 
             <section class="settings-card">
-            
+
                 <h2>Library Information</h2>
+
                 <p class="card-subtitle">
                     Configure the default borrowing rules used by your library.
                 </p>
 
                 <label>Library Name</label>
 
-                <input type="text" name="library_name" value="{{ policy[1] }}" required>
-                
+                <input type="text" name="library_name" value="{{ policy[1] if policy else '' }}" required>
+
                 <label>Borrow Limit</label>
-                
+
                 <div class="radio-group">
-                
+
                     <label>
-                        <input type="radio" name="book_limit_type" value="limited" {% if policy[2] !=-1 %}checked{% endif %}>
-                
+                        <input type="radio" name="book_limit_type" value="limited" {% if not policy or policy[2] !=-1 %}checked{% endif %}>
+
                         Limited
+
                     </label>
-                
+
                     <label>
-                        <input type="radio" name="book_limit_type" value="unlimited" {% if policy[2]==-1 %}checked{% endif %}>
-                
+                        <input type="radio" name="book_limit_type" value="unlimited" {% if policy and policy[2]==-1 %}checked{% endif %}>
+
                         Unlimited
+
                     </label>
-                
+
                 </div>
-                
+
                 <div id="book-limit-box">
 
                     <label>Maximum Books Per Member</label>
 
-                    <input type="number" id="max_books" name="max_books" min="1" placeholder="Example: 4"
-                        value="{% if policy[2] == -1 %}4{% else %}{{ policy[2] }}{% endif %}">
+                    <input type="number" id="max_books" name="max_books" min="1" placeholder="Example: 4" {% if policy and policy[2] !=-1 %}
+                        value="{{ policy[2] }}" {% endif %}>
 
                 </div>
 
                 <label>Loan Period</label>
-                
+
                 <div class="radio-group">
-                
+
                     <label>
-                        <input type="radio" name="loan_type" value="limited" {% if policy[3] !=-1 %}checked{% endif %}>
-                
+                        <input type="radio" name="loan_type" value="limited" {% if not policy or policy[3] !=-1 %}checked{% endif %}>
+
                         Fixed Duration
+
                     </label>
-                
+
                     <label>
-                        <input type="radio" name="loan_type" value="unlimited" {% if policy[3]==-1 %}checked{% endif %}>
-                
+                        <input type="radio" name="loan_type" value="unlimited" {% if policy and policy[3]==-1 %}checked{% endif %}>
+
                         No Due Date
+
                     </label>
 
                 </div>
 
                 <div id="loan-box">
-                
+
                     <label>Loan Duration (Days)</label>
-                
-                    <input type="number" id="loan_days" name="loan_days" min="1" placeholder="Example: 14"
-                        value="{% if policy[3] == -1 %}14{% else %}{{ policy[3] }}{% endif %}">
-                
+
+                    <input type="number" id="loan_days" name="loan_days" min="1" placeholder="Example: 14" {% if policy and policy[3] !=-1
+                        %} value="{{ policy[3] }}" {% endif %}>
+
                 </div>
-                
-                </section>
+            </section>
 
             <!-- ================= Membership ================= -->
 
             <section class="settings-card">
 
                 <h2>Membership</h2>
-                
+
                 <p class="card-subtitle">
                     Choose how long member accounts remain active.
                 </p>
-                
+
                 <div class="radio-group">
 
                     <label>
-                        <input type="radio" name="membership_type" value="limited" {% if policy[4] !=-1 %}checked{% endif %}>
+                        <input type="radio" name="membership_type" value="limited" {% if not policy or policy[4] !=-1 %}checked{% endif %}>
 
                         Fixed Duration
-                        </label>
+
+                    </label>
 
                     <label>
-                        <input type="radio" name="membership_type" value="lifetime" {% if policy[4]==-1 %}checked{% endif %}>
+                        <input type="radio" name="membership_type" value="lifetime" {% if policy and policy[4]==-1 %}checked{% endif %}>
 
                         Lifetime Membership
+
                     </label>
+
                 </div>
-                
+
                 <div id="membership-box">
 
                     <label>Membership Duration (Months)</label>
 
-                    <input type="number" id="membership_months" name="membership_months" min="1" placeholder="Example: 12"
-                        value="{% if policy[4] == -1 %}12{% else %}{{ policy[4] }}{% endif %}">
+                    <input type="number" id="membership_months" name="membership_months" min="1" placeholder="Example: 12" {% if policy and
+                        policy[4] !=-1 %} value="{{ policy[4] }}" {% endif %}>
 
                 </div>
 
             </section>
-
             <!-- ================= Fine Policy ================= -->
 
             <section class="settings-card">
@@ -158,19 +164,23 @@
 
                 <label>Base Fine (₹ per Day)</label>
 
-                <input type="number" step="0.01" name="fine_rate" value="{{ policy[5] }}">
+                <input type="number" step="0.01" name="fine_rate" placeholder="Example: 5" {% if policy %}value="{{ policy[5] }}" {%
+                    endif %} required>
 
                 <label>Fine Increment Interval (Days)</label>
 
-                <input type="number" name="increase_days" value="{{ policy[6] }}">
+                <input type="number" name="increase_days" placeholder="Example: 30" {% if policy %}value="{{ policy[6] }}" {% endif %}
+                    required>
 
                 <label>Additional Fine (₹)</label>
 
-                <input type="number" step="0.01" name="increase_rate" value="{{ policy[7] }}">
+                <input type="number" step="0.01" name="increase_rate" placeholder="Example: 5" {% if policy %}value="{{ policy[7] }}" {%
+                    endif %} required>
 
                 <label>Maximum Fine (₹)</label>
 
-                <input type="number" step="0.01" name="fine_cap" value="{{ policy[8] }}">
+                <input type="number" step="0.01" name="fine_cap" placeholder="Example: 100" {% if policy %}value="{{ policy[8] }}" {%
+                    endif %} required>
 
             </section>
 
@@ -188,15 +198,16 @@
 
                     <label>
 
-                        <input type="radio" name="renewal_type" value="none" {% if policy[9]==0 %}checked{% endif %}>
+                        <input type="radio" name="renewal_type" value="none" {% if not policy or policy[9]==0 %}checked{% endif %}>
 
                         Renewal Not Allowed
 
                     </label>
 
                     <label>
-                    
-                        <input type="radio" name="renewal_type" value="limited" {% if policy[9]==1 and policy[10] !=-1 %}checked{% endif %}>
+
+                        <input type="radio" name="renewal_type" value="limited" {% if policy and policy[9]==1 and policy[10] !=-1 %}checked{%
+                            endif %}>
 
                         Limited Renewal
 
@@ -204,7 +215,7 @@
 
                     <label>
 
-                        <input type="radio" name="renewal_type" value="unlimited" {% if policy[10]==-1 %}checked{% endif %}>
+                        <input type="radio" name="renewal_type" value="unlimited" {% if policy and policy[10]==-1 %}checked{% endif %}>
 
                         Unlimited Renewal
 
@@ -216,8 +227,11 @@
 
                     <label>Maximum Renewals</label>
 
-                    <input type="number" id="max_renewals" name="max_renewals" min="1" placeholder="Example: 2"
-                        value="{% if policy[10] == -1 %}2{% else %}{{ policy[10] }}{% endif %}">
+                    <input type="number" id="max_renewals" name="max_renewals" min="1" placeholder="Example: 2" {% if policy and policy[10]>
+                    0 %}
+                    value="{{ policy[10] }}"
+                    {% endif %}
+                    >
 
                 </div>
 
@@ -234,6 +248,7 @@
         </div>
 
     </form>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
