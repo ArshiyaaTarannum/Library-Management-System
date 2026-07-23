@@ -240,3 +240,28 @@ CREATE TABLE IF NOT EXISTS FinePayment (
 
     FOREIGN KEY (TransactionID) REFERENCES IssueTransaction(TransactionID)
 );
+
+CREATE TABLE LibraryPolicy
+(
+    PolicyID INT PRIMARY KEY DEFAULT 1,
+
+    LibraryName VARCHAR(100) NOT NULL,
+
+    MaxBooksPerMember INT NOT NULL DEFAULT 4,
+
+    LoanPeriodDays INT NOT NULL DEFAULT 14,
+
+    MembershipDurationMonths INT NOT NULL DEFAULT 12,
+
+    FineBaseRate DECIMAL(10,2) NOT NULL DEFAULT 5,
+
+    FineIncreaseEveryDays INT NOT NULL DEFAULT 30,
+
+    FineRateIncrease DECIMAL(10,2) NOT NULL DEFAULT 5,
+
+    FineCapBuffer DECIMAL(10,2) NOT NULL DEFAULT 100,
+
+    AllowRenewal BOOLEAN DEFAULT TRUE,
+
+    MaxRenewals INT DEFAULT 2
+);
