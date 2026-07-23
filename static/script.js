@@ -707,30 +707,144 @@ function resetBorrowForm() {
     document.getElementById("status").value = "Issued";
 
 }
-<script>
+// ==============================
+// Library Policy
+// ==============================
 
-    function toggleRenewal() {
+document.addEventListener("DOMContentLoaded", () => {
 
-    const allow = document.getElementById("allow_renewal").checked;
-    const unlimited = document.getElementById("unlimited_renewals").checked;
-    const maxRenewals = document.getElementById("max_renewals");
+    document
+        .querySelectorAll('input[name="book_limit_type"]')
+        .forEach(radio =>
+            radio.addEventListener("change", toggleBookLimit));
 
-    if (!allow) {
+    document
+        .querySelectorAll('input[name="loan_type"]')
+        .forEach(radio =>
+            radio.addEventListener("change", toggleLoan));
 
-        maxRenewals.disabled = true;
-    document.getElementById("unlimited_renewals").disabled = true;
+    document
+        .querySelectorAll('input[name="membership_type"]')
+        .forEach(radio =>
+            radio.addEventListener("change", toggleMembership));
 
+    document
+        .querySelectorAll('input[name="renewal_type"]')
+        .forEach(radio =>
+            radio.addEventListener("change", toggleRenewal));
+
+    toggleBookLimit();
+    toggleLoan();
+    toggleMembership();
+    toggleRenewal();
+
+});
+
+
+// ==============================
+// Borrow Limit
+// ==============================
+
+function toggleBookLimit() {
+
+    const unlimited =
+        document.querySelector(
+            'input[name="book_limit_type"]:checked'
+        ).value === "unlimited";
+
+    const input = document.getElementById("max_books");
+
+    input.disabled = unlimited;
+
+    if (unlimited) {
+        input.title = "Unlimited borrowing enabled.";
     }
-
     else {
-
-        document.getElementById("unlimited_renewals").disabled = false;
-    maxRenewals.disabled = unlimited;
-
+        input.title = "";
     }
 
 }
 
-    toggleRenewal();
 
-</script>
+// ==============================
+// Loan Period
+// ==============================
+
+function toggleLoan() {
+
+    const unlimited =
+        document.querySelector(
+            'input[name="loan_type"]:checked'
+        ).value === "unlimited";
+
+    const input = document.getElementById("loan_days");
+
+    input.disabled = unlimited;
+
+    if (unlimited) {
+        input.title = "No due date will be assigned.";
+    }
+    else {
+        input.title = "";
+    }
+
+}
+
+
+// ==============================
+// Membership
+// ==============================
+
+function toggleMembership() {
+
+    const lifetime =
+        document.querySelector(
+            'input[name="membership_type"]:checked'
+        ).value === "lifetime";
+
+    const input = document.getElementById("membership_months");
+
+    input.disabled = lifetime;
+
+    if (lifetime) {
+        input.title = "Membership never expires.";
+    }
+    else {
+        input.title = "";
+    }
+
+}
+
+
+// ==============================
+// Renewal
+// ==============================
+
+function toggleRenewal() {
+
+    const selected = document.querySelector(
+        'input[name="renewal_type"]:checked'
+    );
+
+    const input = document.getElementById("max_renewals");
+
+    if (!selected || !input) return;
+
+    if (selected.value === "limited") {
+
+        input.disabled = false;
+        input.title = "";
+
+    } else if (selected.value === "unlimited") {
+
+        input.disabled = true;
+        input.title = "Unlimited renewals enabled.";
+
+    } else {
+
+        input.disabled = true;
+        input.title = "Renewals are disabled.";
+
+    }
+
+}
