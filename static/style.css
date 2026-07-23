@@ -1303,3 +1303,74 @@ hr{
 .pay-form.visible {
     display: flex;
 }
+.policy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+    gap: 25px;
+}
+
+.policy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 25px;
+}
+
+.settings-card {
+    padding: 28px;
+}
+
+.settings-card h2 {
+    margin-bottom: 6px;
+}
+
+.card-subtitle {
+    margin: 0 0 22px;
+    color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 10px 0 18px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+#book-limit-box,
+#loan-box,
+#membership-box,
+#renewal-limit {
+    margin-top: 10px;
+}
+
+input:disabled {
+
+    background: #f5f5f5;
+
+    color: #777;
+
+    cursor: not-allowed;
+
+    opacity: .8;
+
+}
+
+input:disabled {
+
+    background: #f5f5f5;
+
+    color: #777;
+
+    cursor: not-allowed;
+
+    opacity: .8;
+
+}
