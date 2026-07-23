@@ -4,6 +4,7 @@ from database import conn, cur
 
 policy_bp = Blueprint("policy", __name__)
 
+
 @policy_bp.route("/library_policy")
 def library_policy():
 
@@ -20,98 +21,129 @@ def library_policy():
         policy=policy
     )
 
+
 @policy_bp.route("/update_policy", methods=["POST"])
 def update_policy():
 
     library_name = request.form["library_name"]
 
-    max_books = request.form["max_books"]
+    # ---------------- Borrow Limit ----------------
 
-    loan_days = request.form["loan_days"]
+    if request.form["book_limit_type"] == "limited":
+        max_books = int(request.form["max_books"])
+    else:
+        max_books = -1
 
-    if request.form.get("lifetime_membership"):
+    # ---------------- Loan Period ----------------
 
+    if request.form["loan_type"] == "limited":
+        loan_days = int(request.form["loan_days"])
+    else:
+        loan_days = -1
+
+    # ---------------- Membership ----------------
+
+    if request.form["membership_type"] == "limited":
+        membership_months = int(request.form["membership_months"])
+    else:
         membership_months = -1
 
-    else:
+    # ---------------- Fine ----------------
 
-        membership_months = int(request.form["membership_months"])
+    fine_rate = float(request.form["fine_rate"])
+    increase_days = int(request.form["increase_days"])
+    increase_rate = float(request.form["increase_rate"])
+    fine_cap = float(request.form["fine_cap"])
 
-    fine_rate = request.form["fine_rate"]
+    # ---------------- Renewal ----------------
 
-    increase_days = request.form["increase_days"]
+    renewal = request.form["renewal_type"]
 
-    increase_rate = request.form["increase_rate"]
+    if renewal == "none":
 
-    fine_cap = request.form["fine_cap"]
-
-    allow_renewal = 1 if request.form.get("allow_renewal") else 0
-
-    if not allow_renewal:
-
+        allow_renewal = 0
         max_renewals = 0
 
-    elif request.form.get("unlimited_renewals"):
+    elif renewal == "limited":
 
-        max_renewals = -1
+        allow_renewal = 1
+        max_renewals = int(request.form["max_renewals"])
 
     else:
 
-        max_renewals = int(request.form["max_renewals"])
-    cur.execute("""
-        UPDATE LibraryPolicy
+        allow_renewal = 1
+        max_renewals = -1
 
-        SET
+    # ---------------- Check if policy exists ----------------
 
-        LibraryName=%s,
+    cur.execute("SELECT COUNT(*) FROM LibraryPolicy")
+    exists = cur.fetchone()[0]
 
-        MaxBooksPerMember=%s,
+    if exists == 0:
 
-        LoanPeriodDays=%s,
+        cur.execute("""
+            INSERT INTO LibraryPolicy
+            (
+                LibraryName,
+                MaxBooksPerMember,
+                LoanPeriodDays,
+                MembershipDurationMonths,
+                FineBaseRate,
+                FineIncreaseEveryDays,
+                FineRateIncrease,
+                FineCapBuffer,
+                AllowRenewal,
+                MaxRenewals
+            )
+            VALUES
+            (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """,
+        (
+            library_name,
+            max_books,
+            loan_days,
+            membership_months,
+            fine_rate,
+            increase_days,
+            increase_rate,
+            fine_cap,
+            allow_renewal,
+            max_renewals
+        ))
 
-        MembershipDurationMonths=%s,
+        flash("Library policy created successfully!")
 
-        FineBaseRate=%s,
+    else:
 
-        FineIncreaseEveryDays=%s,
+        cur.execute("""
+            UPDATE LibraryPolicy
+            SET
+                LibraryName=%s,
+                MaxBooksPerMember=%s,
+                LoanPeriodDays=%s,
+                MembershipDurationMonths=%s,
+                FineBaseRate=%s,
+                FineIncreaseEveryDays=%s,
+                FineRateIncrease=%s,
+                FineCapBuffer=%s,
+                AllowRenewal=%s,
+                MaxRenewals=%s
+        """,
+        (
+            library_name,
+            max_books,
+            loan_days,
+            membership_months,
+            fine_rate,
+            increase_days,
+            increase_rate,
+            fine_cap,
+            allow_renewal,
+            max_renewals
+        ))
 
-        FineRateIncrease=%s,
-
-        FineCapBuffer=%s,
-
-        AllowRenewal=%s,
-
-        MaxRenewals=%s
-
-        WHERE PolicyID=1
-    """,
-
-    (
-
-        library_name,
-
-        max_books,
-
-        loan_days,
-
-        membership_months,
-
-        fine_rate,
-
-        increase_days,
-
-        increase_rate,
-
-        fine_cap,
-
-        allow_renewal,
-
-        max_renewals
-
-    ))
+        flash("Library policy updated successfully!")
 
     conn.commit()
-
-    flash("Library policy updated successfully!")
 
     return redirect(url_for("policy.library_policy"))
