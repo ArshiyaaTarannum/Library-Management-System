@@ -707,3 +707,30 @@ function resetBorrowForm() {
     document.getElementById("status").value = "Issued";
 
 }
+<script>
+
+    function toggleRenewal() {
+
+    const allow = document.getElementById("allow_renewal").checked;
+    const unlimited = document.getElementById("unlimited_renewals").checked;
+    const maxRenewals = document.getElementById("max_renewals");
+
+    if (!allow) {
+
+        maxRenewals.disabled = true;
+    document.getElementById("unlimited_renewals").disabled = true;
+
+    }
+
+    else {
+
+        document.getElementById("unlimited_renewals").disabled = false;
+    maxRenewals.disabled = unlimited;
+
+    }
+
+}
+
+    toggleRenewal();
+
+</script>
