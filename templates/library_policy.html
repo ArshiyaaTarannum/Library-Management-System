@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 
 <head>
 
-<title>Library Policy</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Library Policy</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
@@ -12,53 +16,102 @@
 
 <h1>Library Policy</h1>
 
-<form action="{{ url_for('policy.update_policy') }}" method="POST">
+<p class="subtitle">
+    Configure how your library operates. These settings automatically affect
+    borrowing, memberships, fines and renewals throughout the system.
+</p>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+
+{% for message in messages %}
+
+<div class="flash-message">
+
+    {{ message }}
+
+</div>
+
+{% endfor %}
+
+{% endif %}
+{% endwith %}
+
+<form class="policy-form" action="{{ url_for('policy.update_policy') }}" method="POST">
+
+    <!-- ================= Library ================= -->
+
+    <div class="settings-card">
+
+        <h2>🏛 Library Information</h2>
 
 <label>Library Name</label>
 
 <input
 type="text"
 name="library_name"
-value="{{ policy[1] }}">
+value="{{ policy[1] }}"
+required>
 
-<br><br>
-
-<label>Maximum Books</label>
+<label>Maximum Books Per Member</label>
 
 <input
 type="number"
 name="max_books"
-value="{{ policy[2] }}">
+min="1"
+value="{{ policy[2] }}"
+required>
 
-<br><br>
-
-<label>Loan Period</label>
+<label>Loan Period (Days)</label>
 
 <input
 type="number"
 name="loan_days"
-value="{{ policy[3] }}">
+min="1"
+value="{{ policy[3] }}"
+required>
 
-<br><br>
+</div>
 
-<label>Membership Duration</label>
+<!-- ================= Membership ================= -->
+
+<div class="settings-card">
+
+    <h2>👥 Membership</h2>
+
+    <label>
+
+        <input type="checkbox" id="lifetime_membership" name="lifetime_membership" {% if policy[4]==-1 %}checked{% endif
+            %} onchange="toggleMembership()">
+
+        Lifetime Membership
+
+    </label>
+
+    <label>Membership Duration (Months)</label>
 
 <input
 type="number"
+id="membership_months"
 name="membership_months"
-value="{{ policy[4] }}">
+min="1"
+value="{% if policy[4] == -1 %}12{% else %}{{ policy[4] }}{% endif %}">
 
-<br><br>
+</div>
 
-<label>Fine Base Rate</label>
+<!-- ================= Fine ================= -->
+
+<div class="settings-card">
+
+<h2>💰 Fine Policy</h2>
+
+<label>Base Fine Rate (₹ / Day)</label>
 
 <input
 type="number"
 step="0.01"
 name="fine_rate"
 value="{{ policy[5] }}">
-
-<br><br>
 
 <label>Increase Every (Days)</label>
 
@@ -67,9 +120,7 @@ type="number"
 name="increase_days"
 value="{{ policy[6] }}">
 
-<br><br>
-
-<label>Increase Rate</label>
+<label>Increase Rate (₹)</label>
 
 <input
 type="number"
@@ -77,9 +128,7 @@ step="0.01"
 name="increase_rate"
 value="{{ policy[7] }}">
 
-<br><br>
-
-<label>Fine Cap Buffer</label>
+<label>Fine Cap Buffer (₹)</label>
 
 <input
 type="number"
@@ -87,37 +136,84 @@ step="0.01"
 name="fine_cap"
 value="{{ policy[8] }}">
 
-<br><br>
+</div>
+
+<!-- ================= Renewal ================= -->
+
+<div class="settings-card">
+
+    <h2>🔄 Renewal Policy</h2>
 
 <label>
 
 <input
 type="checkbox"
+id="allow_renewal"
 name="allow_renewal"
-{% if policy[9] %}checked{% endif %}>
+{% if policy[9] %}checked{% endif %}
+onchange="toggleRenewal()">
 
 Allow Renewal
 
 </label>
 
-<br><br>
+<label>
+
+    <input type="checkbox" id="unlimited_renewals" name="unlimited_renewals" {% if policy[10]==-1 %}checked{% endif %}
+        onchange="toggleRenewal()">
+
+    Unlimited Renewals
+
+</label>
 
 <label>Maximum Renewals</label>
 
 <input
 type="number"
+id="max_renewals"
 name="max_renewals"
-value="{{ policy[10] }}">
+min="1"
+value="{% if policy[10] == -1 %}1{% else %}{{ policy[10] }}{% endif %}">
 
-<br><br>
+</div>
 
-<button type="submit">
+<div class="save-container">
 
-Save Policy
+<button class="save-btn" type="submit">
+
+Save Library Policy
 
 </button>
 
+</div>
+
 </form>
+
+<script>
+
+    function toggleRenewal() {
+
+        const allow = document.getElementById("allow_renewal").checked;
+        const unlimited = document.getElementById("unlimited_renewals").checked;
+        const input = document.getElementById("max_renewals");
+
+        document.getElementById("unlimited_renewals").disabled = !allow;
+        input.disabled = !allow || unlimited;
+
+    }
+
+    function toggleMembership() {
+
+        const lifetime = document.getElementById("lifetime_membership").checked;
+
+        document.getElementById("membership_months").disabled = lifetime;
+
+    }
+
+    toggleRenewal();
+    toggleMembership();
+
+</script>
 
 </body>
 
