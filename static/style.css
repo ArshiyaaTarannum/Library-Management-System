@@ -1374,3 +1374,66 @@ input:disabled {
     opacity: .8;
 
 }
+.page-section {
+
+    margin: 35px auto;
+
+    width: min(1400px, 95%);
+
+}
+
+.section-header {
+
+    margin-bottom: 20px;
+
+}
+
+.section-header h2 {
+
+    margin-bottom: 6px;
+
+    font-size: 1.5rem;
+
+}
+
+.section-header p {
+
+    color: #777;
+
+    font-size: 0.95rem;
+
+}
+
+.dashboard-number {
+
+    font-size: 2.2rem;
+
+    font-weight: 700;
+
+    margin: 15px 0;
+
+}
+
+.dashboard-primary {
+
+    color: #0d6efd;
+
+}
+
+.dashboard-success {
+
+    color: #198754;
+
+}
+
+.dashboard-danger {
+
+    color: #dc3545;
+
+}
+
+.table-container {
+
+    overflow-x: auto;
+
+}
