@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Library Borrow / Return Management</title>
+    <title>Borrow & Return Management</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
@@ -14,7 +14,19 @@
 
 <body>
 
-    <h1>Borrow / Return Management</h1>
+    <header class="page-header">
+    
+        <div>
+    
+            <h1>Borrow & Return Management</h1>
+    
+            <p class="subtitle">
+                Manage book circulation, returns, overdue books and fine collection from one centralized dashboard.
+            </p>
+    
+        </div>
+    
+    </header>
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -32,515 +44,713 @@
     {% endif %}
     {% endwith %}
 
-    <p class="subtitle">
-
-        Issue books to members, process returns, and track overdue fines.
-
-    </p>
-
-    <!-- DASHBOARD STATS -->
-
     <section class="page-section">
-    
+
         <div class="section-header">
-    
+
             <h2>Library Overview</h2>
-    
+
             <p>
-                View current borrowing activity and outstanding library transactions.
+                Live borrowing statistics across the library.
             </p>
-    
+
         </div>
 
         <div class="dashboard">
 
             <div class="dashboard-card">
-                <h3>Total Issued</h3>
+
+                <span class="stat-title">
+                    Total Issued
+                </span>
                 
-                <p class="dashboard-number dashboard-primary">
+                <div class="dashboard-number dashboard-primary">
+
                     {{ total_issued }}
-                </p>
-                <span>Copies currently checked out.</span>
+                </div>
+                
+                <span class="stat-footer">
+                
+                    Copies currently borrowed
+                
+                </span>
                 
                 </div>
 
             <div class="dashboard-card">
-                <h3>Overdue</h3>
+
+                <span class="stat-title">
+                    Overdue Books
+                </span>
                 
-                <p class="dashboard-number dashboard-danger">
+                <div class="dashboard-number dashboard-danger">
+
                     {{ total_overdue }}
-                </p>
-                <span>Books past their due date.</span>
+                </div>
+                
+                <span class="stat-footer">
+                
+                    Require immediate attention
+                
+                </span>
                 
                 </div>
 
             <div class="dashboard-card">
-                <h3>Returned Today</h3>
+
+                <span class="stat-title">
+                    Returned Today
+                </span>
                 
-                <p class="dashboard-number dashboard-success">
+                <div class="dashboard-number dashboard-success">
+
                     {{ returned_today }}
-                </p>
-                <span>Books returned today.</span>
+                </div>
+                
+                <span class="stat-footer">
+                
+                    Successfully returned today
+                
+                </span>
                 
                 </div>
 
             <div class="dashboard-card">
-                <h3>Outstanding Fine</h3>
+
+                <span class="stat-title">
+                    Outstanding Fine
+                </span>
                 
-                <p class="dashboard-number dashboard-danger">
+                <div class="dashboard-number dashboard-danger">
+
                     ₹{{ "%.2f"|format(outstanding_fine|float) }}
-                </p>
-                <span>Pending fine collection.</span>
+                </div>
+                
+                <span class="stat-footer">
+                
+                    Awaiting fine collection
+                
+                </span>
                 
                 </div>
 
         </div>
 
     </section>
-
-    <!-- ISSUE BOOK FORM -->
+    <!-- ================= ISSUE BOOK ================= -->
 
     <section class="page-section">
-    
+
         <div class="section-header">
-    
+
             <h2>Issue Book</h2>
-    
+
             <p>
-                Issue available copies to active library members.
+                Issue an available book copy to an active library member.
             </p>
-    
         </div>
 
-        <div class="container">
-
-            <h2 style="margin-bottom:15px;">Issue a Book</h2>
+        <div class="settings-card">
 
             <form id="issue-form" action="{{ url_for('issue_book') }}" method="POST" autocomplete="off">
 
                 <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
 
-                <label>Select Member</label>
+                <div class="form-grid">
 
-                <select name="member_id" required>
+                    <div class="form-group">
 
-                    <option value="">Select Member</option>
+                        <label for="member_id">
+                            Member
+                        </label>
+                        
+                        <select id="member_id" name="member_id" required>
+                        
+                            <option value="">
+                                Select Member
+                            </option>
 
-                    {% for m in active_members %}
-                    <option value="{{ m[0] }}">
-                        {{ m[0] }} - {{ m[1] }} ({{ m[2] }}/{{ borrow_limit }} issued)
-                    </option>
-                    {% endfor %}
+                            {% for m in active_members %}
 
-                </select>
+                            <option value="{{ m[0] }}">
+                                {{ m[1] }}
+                                
+                                ({{ m[0] }})
+                                
+                                •
+                                
+                                {{ m[2] }}/{{ borrow_limit }} Books Issued
+                                
+                                </option>
 
-                <label>Search Copy</label>
+                            {% endfor %}
 
-                <input type="text" id="copy-filter" placeholder="Type a Copy ID or Book Name to filter..."
-                    oninput="filterCopyOptions()">
+                        </select>
 
-                <label>Select Available Copy</label>
+                    </div>
 
-                <select name="copy_id" id="copy-select" required>
+                    <div class="form-group">
+                        <label for="copy-filter">
+                            Search Book
+                        </label>
+                        <input type="text" id="copy-filter" placeholder="Search by Copy ID or Book Name" oninput="filterCopyOptions()">
 
-                    <option value="">Select Copy</option>
+                    </div>
 
-                    {% for c in available_copies %}
-                    <option value="{{ c[0] }}" data-search="{{ c[0]|lower }} {{ c[2]|lower }}">
-                        {{ c[0] }} - {{ c[1] }} - {{ c[2] }}
-                    </option>
-                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="copy-select">
+                    
+                        Available Copy
+                    
+                    </label>
+                    
+                    <select id="copy-select" name="copy_id" required>
+                    
+                        <option value="">
+                            Select Available Copy
+                        </option>
 
-                </select>
+                        {% for c in available_copies %}
+                        <option value="{{ c[0] }}" data-search="{{ c[0]|lower }} {{ c[2]|lower }}">
+                            {{ c[2] }}
+                            
+                            •
+                            
+                            {{ c[1] }}
+                            
+                            •
+                            
+                            {{ c[0] }}
+                            
+                            </option>
 
-                <p class="hint-text">
-                    Issue Date will be today. Due Date is automatically calculated as
-                    today + {{ loan_period_days }} days.
-                </p>
+                        {% endfor %}
 
-                <button type="submit" class="action-btn issue-btn">
+                    </select>
 
-                    Issue Book
+                </div>
+                <div class="policy-preview">
 
-                </button>
+                    <div class="policy-item">
+                    
+                        <span class="preview-label">
+                    
+                            Issue Date
+                    
+                        </span>
+                    
+                        <strong>
+                    
+                            {{ today }}
+                    
+                        </strong>
+                    
+                    </div>
+                    
+                    <div class="policy-item">
+                    
+                        <span class="preview-label">
+                    
+                            Loan Period
+                    
+                        </span>
+                    
+                        <strong>
+                    
+                            {% if loan_period_days == -1 %}
+                    
+                            Unlimited
+                    
+                            {% else %}
+                    
+                            {{ loan_period_days }} Days
+                    
+                            {% endif %}
+                    
+                        </strong>
+                    
+                    </div>
+                    
+                    <div class="policy-item">
+                    
+                        <span class="preview-label">
+                    
+                            Due Date
+                    
+                        </span>
+                    
+                        <strong>
+                    
+                            {% if loan_period_days == -1 %}
+                    
+                            No Due Date
+                    
+                            {% else %}
+                    
+                            Automatically Calculated
+                    
+                            {% endif %}
+                    
+                        </strong>
+                    
+                    </div>
+                    
+                    <div class="policy-item">
+                    
+                        <span class="preview-label">
+                    
+                            Borrow Limit
+                    
+                        </span>
+                    
+                        <strong>
+                    
+                            {{ borrow_limit }} Books
+                    
+                        </strong>
+                    
+                    </div>
+                    
+                    </div>
+                    
+                    <div class="issue-note">
+                    
+                        The selected copy will immediately become unavailable after issuing until it is returned.
+                    
+                    </div>
+                    
+                    <div class="form-actions">
+                    
+                        <button type="submit" class="action-btn issue-btn" {% if not available_copies %}disabled{% endif %}>
+
+                        Issue Book
+
+                    </button>
+
+                </div>
 
             </form>
 
         </div>
+
     </section>
+    <!-- ================= BORROW TRANSACTIONS ================= -->
 
     <section class="page-section">
-    
+
         <div class="section-header">
-    
+
             <h2>Borrow Transactions</h2>
-    
+
             <p>
-                Search, filter and manage issued and returned books.
+                Search, filter and monitor every borrowing transaction in the library.
             </p>
-    
         </div>
-    </section>
 
-    <div class="top-search">
+        <div class="settings-card">
 
-        <button id="search-icon" class="search-icon">
+            <form action="{{ url_for('borrow_books') }}" method="GET" autocomplete="off" class="transaction-search-form">
 
-            🔍
+                <div class="form-grid">
 
-        </button>
+                    <div class="form-group">
 
-    </div>
+                        <label>Search By</label>
 
-    <div id="search-box" class="search-box">
+                        <select name="search_by">
 
-        <form action="{{ url_for('borrow_books') }}" method="GET">
+                            <option value="book_name" {% if not search_by or search_by=="book_name" %}selected{% endif %}>
+                                Book Name
+                            </option>
 
-            <select name="search_by">
+                            <option value="transaction_id" {% if search_by=="transaction_id" %}selected{% endif %}>
+                                Transaction ID
+                            </option>
 
-                <option value="book_name" {% if not search_by or search_by=='book_name' %}selected{% endif %}>
-                    Book Name
-                </option>
+                            <option value="copy_id" {% if search_by=="copy_id" %}selected{% endif %}>
+                                Copy ID
+                            </option>
 
-                <option value="transaction_id" {% if search_by=='transaction_id' %}selected{% endif %}>
-                    Transaction ID
-                </option>
+                            <option value="book_id" {% if search_by=="book_id" %}selected{% endif %}>
+                                Book ID
+                            </option>
 
-                <option value="copy_id" {% if search_by=='copy_id' %}selected{% endif %}>
-                    Copy ID
-                </option>
+                            <option value="member_id" {% if search_by=="member_id" %}selected{% endif %}>
+                                Member ID
+                            </option>
 
-                <option value="book_id" {% if search_by=='book_id' %}selected{% endif %}>
-                    Book ID
-                </option>
+                            <option value="member_name" {% if search_by=="member_name" %}selected{% endif %}>
+                                Member Name
+                            </option>
 
-                <option value="member_id" {% if search_by=='member_id' %}selected{% endif %}>
-                    Member ID
-                </option>
+                        </select>
 
-                <option value="member_name" {% if search_by=='member_name' %}selected{% endif %}>
-                    Member Name
-                </option>
+                    </div>
+                    <div class="form-group">
 
-            </select>
+                        <label>Search Value</label>
+                        
+                        <input type="text" name="search" value="{{ search }}" placeholder="Enter keyword...">
+                        
+                        </div>
+                        
+                        </div>
+                        
+                        <div class="form-grid">
+                        
+                            <div class="form-group">
+                        
+                                <label>Status</label>
 
-            <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+                        <select name="status_filter">
 
-            <div class="inventory-filters">
+                            <option value="">All Status</option>
 
-                <select name="status_filter">
+                            <option value="Issued" {% if status_filter=="Issued" %}selected{% endif %}>
+                                Issued
+                            </option>
 
-                    <option value="">All Statuses</option>
+                            <option value="Returned" {% if status_filter=="Returned" %}selected{% endif %}>
+                                Returned
+                            </option>
 
-                    <option value="Issued" {% if status_filter=='Issued' %}selected{% endif %}>Issued</option>
+                        </select>
 
-                    <option value="Returned" {% if status_filter=='Returned' %}selected{% endif %}>Returned</option>
+                    </div>
+                    
+                    <div class="form-group">
+                    
+                        <label>Fine Payment</label>
 
-                </select>
+                        <select name="payment_filter">
 
-                <select name="payment_filter">
+                            <option value="">All</option>
 
-                    <option value="">All Payment Status</option>
+                            <option value="Paid" {% if payment_filter=="Paid" %}selected{% endif %}>
+                                Paid
+                            </option>
 
-                    <option value="Paid" {% if payment_filter=='Paid' %}selected{% endif %}>Paid</option>
+                            <option value="Unpaid" {% if payment_filter=="Unpaid" %}selected{% endif %}>
+                                Unpaid
+                            </option>
 
-                    <option value="Unpaid" {% if payment_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
+                        </select>
 
-                </select>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                    
+                        <label>
+                    
+                            <input type="checkbox" name="overdue_only" value="1" {% if overdue_only %}checked{% endif %}>
+                            Show Overdue Only
+                            
+                            </label>
 
-                <label class="radio-inline">
-                    <input type="checkbox" name="overdue_only" value="1" {% if overdue_only %}checked{% endif %}>
-                    Overdue Only
-                </label>
+                    </div>
+
+                </div>
+                
+                <div class="form-actions">
+                
+                    <button type="submit" class="action-btn issue-btn">
+
+                        Search
+
+                    </button>
+
+                    <a href="{{ url_for('borrow_books') }}" class="action-btn">
+
+                        Reset Filters
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="results-header">
+        
+            <div>
+        
+                <h3>
+        
+                    Borrow History
+        
+                </h3>
+        
+                <p class="table-subtext">
+        
+                    Showing {{ showing_count }} transaction(s)
+
+                </p>
 
             </div>
-
-            <button type="submit">
-
-                Search
-
-            </button>
-
-            <a href="{{ url_for('borrow_books') }}" class="clear-btn">
-
-                Clear
-
-            </a>
-
-        </form>
-
-    </div>
-
-    <p class="results-count">
-        Showing {{ showing_count }} transaction(s)
-    </p>
-
-    <!-- BORROWED BOOKS TABLE -->
+            
+            </div>
+            
+            </section>
+            
+            <!-- ================= TRANSACTION TABLE ================= -->
 
     <section class="page-section">
-    
+
         <div class="table-container">
+            <div class="table-header">
+            
+                <h3>Borrow History</h3>
+            
+                <p>
+            
+                    {{ showing_count }} record(s) found
+            
+                </p>
+            
+            </div>
+
             <table class="category-table">
 
-                <tr>
+                <thead>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['transaction_id'] }}">
-                            Transaction ID {% if current_sort == 'transaction_id' %}{{ '▲' if current_dir == 'asc' else
-                            '▼' }}{%
-                            endif %}
-                            </a>
-                            </th>
+                    <tr>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['copy_id'] }}">
-                            Copy ID {% if current_sort == 'copy_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif
-                            %}
-                            </a>
-                            </th>
+                        <th>Transaction</th>
+                        <th>Book</th>
+                        <th>Member</th>
+                        <th>Issue</th>
+                        <th>Due</th>
+                        <th>Status</th>
+                        <th>Fine</th>
+                        <th>Payment</th>
+                        <th>Action</th>
+                        
+                        </tr>
+                        
+                        </thead>
+                        
+                        <tbody>
+                        
+                            {% if transactions %}
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['book_id'] }}">
-                            Book ID {% if current_sort == 'book_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif
-                            %}
-                            </a>
-                            </th>
+                    {% for txn in transactions %}
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['book_name'] }}">
-                            Book Name {% if current_sort == 'book_name' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
-                            endif %}
-                            </a>
-                            </th>
+                    <tr class="{% if txn.is_overdue %}overdue-row{% endif %}">
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['member_id'] }}">
-                            Member ID {% if current_sort == 'member_id' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
-                            endif %}
-                            </a>
-                            </th>
+                        <td>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['member_name'] }}">
-                            Member Name {% if current_sort == 'member_name' %}{{ '▲' if current_dir == 'asc' else '▼'
-                            }}{% endif
-                            %}
-                            </a>
-                            </th>
+                            <strong>{{ txn.transaction_id }}</strong>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['issue_date'] }}">
-                            Issue Date {% if current_sort == 'issue_date' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
-                            endif
-                            %}
-                            </a>
-                            </th>
+                            <div class="table-subtext">
+                                Copy ID: {{ txn.copy_id }}
+                            </div>
+                            </td>
+                            <td>
+                                <strong>{{ txn.book_name }}</strong>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['due_date'] }}">
-                            Due Date {% if current_sort == 'due_date' %}{{ '▲' if current_dir == 'asc' else '▼' }}{%
-                            endif %}
-                            </a>
-                            </th>
+                            <div class="table-subtext">
 
-                    <th>
-                        Days Remaining / Overdue
-                    </th>
+                                Book ID: {{ txn.book_id }}
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['fine'] }}">
-                            Fine {% if current_sort == 'fine' %}{{ '▲' if current_dir == 'asc' else '▼' }}{% endif %}
-                        </a>
-                    </th>
+                            </div>
 
-                    <th>
-                        <a class="sort-link" href="{{ sort_links['payment_status'] }}">
-                            Payment Status {% if current_sort == 'payment_status' %}{{ '▲' if current_dir == 'asc' else
-                            '▼' }}{%
-                            endif %}
-                            </a>
-                            </th>
+                        </td>
 
-                    <th>
-                        Action
-                    </th>
+                        <td>
 
-                </tr>
+                            <strong>{{ txn.member_name }}</strong>
 
+                            <div class="table-subtext">
 
-                {% if transactions %}
+                                {{ txn.member_id }}
 
+                            </div>
 
-                {% for txn in transactions %}
+                        </td>
 
-                <tr class="{% if txn.is_overdue %}overdue-row{% endif %}">
+                        <td>
 
-                    <td>{{ txn.transaction_id }}</td>
+                            {{ txn.issue_date }}
 
-                    <td>{{ txn.copy_id }}</td>
+                        </td>
 
-                    <td>{{ txn.book_id }}</td>
+                        <td>
 
-                    <td>{{ txn.book_name }}</td>
+                            {% if txn.due_date %}
 
-                    <td>{{ txn.member_id }}</td>
-
-                    <td>{{ txn.member_name }}</td>
-
-                    <td>{{ txn.issue_date }}</td>
-
-                    <td>{{ txn.due_date }}</td>
-
-                    <td>
-
-                        {% if txn.status == 'Issued' %}
-
-                        {% if txn.is_overdue %}
-                        <span class="badge badge-damaged">{{ txn.overdue_days }} day(s) overdue</span>
-                        {% else %}
-                        <span class="badge badge-available">On time</span>
-                        {% endif %}
-
-                        {% else %}
-
-                        <span class="no-action-text">
-                            Returned {% if txn.overdue_days > 0 %}({{ txn.overdue_days }} day(s) late){% endif %}
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        Rs {{ "%.2f"|format(txn.fine_amount|float) }}
-                        {% if txn.is_projected_fine and txn.fine_amount > 0 %}
-                        <span class="no-action-text">(projected)</span>
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {% if txn.status == 'Issued' %}
-
-                        <span class="no-action-text">—</span>
-
-                        {% elif txn.fine_amount <= 0 %} <span class="no-action-text">No Fine</span>
-
-                            {% elif txn.fine_paid %}
-
-                            <span class="badge badge-available">Paid</span>
+                            {{ txn.due_date }}
 
                             {% else %}
 
-                            <span class="badge badge-damaged">Unpaid</span>
+                            No Due Date
 
-                            <button type="button" class="action-btn pay-btn" onclick="togglePayForm('{{ txn.transaction_id }}')">
-                                Pay Fine
-                            </button>
+                            {% endif %}
 
-                            <form id="pay-form-{{ txn.transaction_id }}" action="{{ url_for('pay_fine') }}" method="POST"
-                                class="inline-action-form pay-form">
+                        </td>
 
-                                <input type="hidden" name="transaction_id" value="{{ txn.transaction_id }}">
+                        <td>
+
+                            {% if txn.status == "Issued" %}
+
+                            {% if txn.is_overdue %}
+                            <span class="badge badge-damaged">
+                            
+                                {{ txn.overdue_days }} Day(s) Overdue
+                            
+                            </span>
+                            
+                            {% else %}
+                            <span class="badge badge-issued">
+                            
+                                Issued
+                            
+                            </span>
+                            
+                            {% endif %}
+
+                            {% else %}
+
+                            <span class="badge badge-returned">
+                            
+                                Returned
+                            
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            ₹{{ "%.2f"|format(txn.fine_amount|float) }}
+
+                        </td>
+
+                        <td>
+
+                            {% if txn.status == "Issued" %}
+                            
+                            <span class="table-subtext">
+                                Pending Return
+                            </span>
+
+                            {% elif txn.fine_amount <= 0 %}
+
+<span class="badge badge-returned">
+                                No Fine
+                                </span>
+
+                                {% elif txn.fine_paid %}
+
+                                <span class="badge badge-paid">
+                                
+                                    Paid
+                                
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge badge-unpaid">
+                                
+                                    Unpaid
+                                
+                                </span>
+                                
+                                <br><br>
+                                
+                                <button type="button" class="action-btn pay-btn" onclick="togglePayForm('{{ txn.transaction_id }}')">
+                                    Collect
+                                    
+                                    </button>
+
+                                <form id="pay-form-{{ txn.transaction_id }}" action="{{ url_for('pay_fine') }}" method="POST"
+                                    class="inline-action-form pay-form">
+
+                                    <input type="hidden" name="transaction_id" value="{{ txn.transaction_id }}">
+
+                                    <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
+
+                                    <select name="payment_mode" required>
+                                        <option value="">Payment Mode</option>
+                                        
+                                        <option>Cash</option>
+                                        
+                                        <option>UPI</option>
+                                        
+                                        <option>Card</option>
+                                        
+                                        </select>
+
+                                    <input type="date" name="payment_date" value="{{ today }}" required>
+
+                                    <button type="submit" class="action-btn issue-btn">
+
+                                        Confirm
+
+                                    </button>
+
+                                </form>
+
+                                {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if txn.status == "Issued" %}
+                            <form action="{{ url_for('return_book') }}" method="POST" class="inline-action-form"
+                                onsubmit="return confirm('Return this book?')">
+
+                                <input type="hidden" name="copy_id" value="{{ txn.copy_id }}">
+
                                 <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
 
-                                <select name="payment_mode" required>
-                                    <option value="">Mode</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="UPI">UPI</option>
-                                    <option value="Card">Card</option>
-                                </select>
+                                <button class="action-btn return-btn">
+                                
+                                    Return
 
-                                <input type="date" name="payment_date" value="{{ today }}" required>
-
-                                <button type="submit" class="action-btn issue-btn">
-                                    Confirm
                                 </button>
 
                             </form>
 
+                            {% else %}
+
+                            <span class="table-subtext">
+                            
+                                Completed
+                            
+                            </span>
+
                             {% endif %}
 
-                    </td>
+                        </td>
 
-                    <td>
+                    </tr>
 
-                        {% if txn.status == 'Issued' %}
+                    {% endfor %}
 
-                        <form action="{{ url_for('return_book') }}" method="POST" class="inline-action-form"
-                            onsubmit="return confirm('Mark Copy {{ txn.copy_id }} as returned?')">
+                    {% else %}
 
-                            <input type="hidden" name="copy_id" value="{{ txn.copy_id }}">
-                            <input type="hidden" name="next" value="{{ url_for('borrow_books') }}">
+                    <tr>
 
-                            <button type="submit" class="action-btn return-btn">
-                                Return
-                            </button>
+                        <td colspan="9" class="empty-table">
 
-                        </form>
+                            No borrow transactions found.
 
-                        {% else %}
+                        </td>
 
-                        <span class="no-action-text">—</span>
+                    </tr>
 
-                        {% endif %}
+                    {% endif %}
 
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-
-                {% else %}
-
-
-                <tr>
-
-                    <td colspan="12">
-
-                        No borrow transactions found.
-
-                    </td>
-
-                </tr>
-
-
-                {% endif %}
-
+                </tbody>
 
             </table>
+
         </div>
-        
-        </section>
-
-    <!-- NAVIGATION -->
-
-    <div class="navigation-buttons">
-
-        <a href="{{ url_for('dashboard') }}" class="nav-btn">
-            Dashboard
-        </a>
-
-        <a href="{{ url_for('add_books') }}" class="nav-btn">
-            Book Management
-        </a>
-
-        <a href="{{ url_for('category.category') }}" class="nav-btn">
-            Category Management
-        </a>
-
-        <a href="{{ url_for('inventory') }}" class="nav-btn">
-            Inventory
-        </a>
-
-        <a href="{{ url_for('members') }}" class="nav-btn">
-            Member Management
-        </a>
-
-    </div>
+</section>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
