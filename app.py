@@ -1,56 +1,32 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+
 from datetime import date, timedelta
+
 import json
 import mysql.connector
-from routes.category import category_bp
-from database import conn, cur
 
+from flask import Flask, flash, redirect, render_template, request, url_for
+
+from database import conn, cur
+from routes.category import category_bp
 from routes.policy import policy_bp
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 app.register_blueprint(category_bp)
 app.register_blueprint(policy_bp)
-
-VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
-VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
-VALID_SHELF_STATUS = {"Active", "Inactive"}
-
-VALID_PAYMENT_MODES = {"Cash", "UPI", "Card"}
-INVENTORY_SORT_COLUMNS = {
-    "copy_id": "BookCopy.CopyID",
-    "book_id": "BookCopy.BookID",
-    "book_name": "Book.BookName",
-    "category": "Category.CategoryName",
-    "shelf": "BookCopy.Shelf",
-    "status": "BookCopy.Status",
-    "condition": "BookCopy.`Condition`",
-    "date_added": "BookCopy.DateAdded",
-}
-
-BORROW_SORT_COLUMNS = {
-    "transaction_id": "IssueTransaction.TransactionID",
-    "copy_id": "IssueTransaction.CopyID",
-    "book_id": "BookCopy.BookID",
-    "book_name": "Book.BookName",
-    "member_id": "Member.MemberID",
-    "member_name": "Member.MemberName",
-    "issue_date": "IssueTransaction.IssueDate",
-    "due_date": "IssueTransaction.DueDate",
-    "status": "IssueTransaction.Status",
-    "fine": "IssueTransaction.FineAmount",
-    "payment_status": "IssueTransaction.PaymentStatus",
-}
-# ---------------- LIBRARY SETTINGS ----------------
-
-BORROW_LIMIT = 5
-
-LOAN_PERIOD_DAYS = 14
-
-FINE_BASE_RATE = 5                 # ₹5/day for first month
-FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
-FINE_MONTH_LENGTH_DAYS = 30
-FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
-
+from config import (
+    VALID_STATUSES,
+    VALID_CONDITIONS,
+    VALID_SHELF_STATUS,
+    VALID_PAYMENT_MODES,
+    INVENTORY_SORT_COLUMNS,
+    BORROW_SORT_COLUMNS,
+    BORROW_LIMIT,
+    LOAN_PERIOD_DAYS,
+    FINE_BASE_RATE,
+    FINE_RATE_STEP,
+    FINE_MONTH_LENGTH_DAYS,
+    FINE_CAP_BUFFER,
+)
 # DASHBOARD PAGE 
 
 @app.route("/")
@@ -499,7 +475,7 @@ def add_book():
 
         conn.rollback()
 
-        print(e)
+        app.logger.exception(e)
 
         flash("Unable to add book.")
 
@@ -1637,7 +1613,7 @@ def add_member():
 
         conn.rollback()
 
-        print(e)
+        app.logger.exception(e)
 
         flash("Unable to add member.")
 
@@ -1845,7 +1821,7 @@ def issue_book():
 
         conn.rollback()
 
-        print(e)
+        app.logger.exception(e)
 
         flash("Unable to issue the book.")
 
@@ -1935,7 +1911,7 @@ def return_book():
 
         conn.rollback()
 
-        print(e)
+        app.logger.exception(e)
 
         flash("Unable to return the book.")
 
@@ -2051,7 +2027,7 @@ def pay_fine():
 
         conn.rollback()
 
-        print(e)
+        app.logger.exception(e)
 
         flash("Unable to record the fine payment.")
 
