@@ -9,11 +9,13 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from database import conn, cur
 from routes.category import category_bp
 from routes.policy import policy_bp
+from routes.books import books_bp
 from helpers.book_helper import get_next_book_id
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 app.register_blueprint(category_bp)
 app.register_blueprint(policy_bp)
+app.register_blueprint(books_bp)
 from config import (
     VALID_STATUSES,
     VALID_CONDITIONS,

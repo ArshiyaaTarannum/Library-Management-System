@@ -1,23 +1,26 @@
-def get_next_book_id():
-    cur.execute("""
-        SELECT BookID
-        FROM Book
-        ORDER BY BookID DESC
-        LIMIT 1
-    """)
-    last_book = cur.fetchone()
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    current_app
+)
 
-    if last_book is None:
-        return "LIB0001"
+from datetime import date
+import json
+import mysql.connector
 
-    number = int(last_book[0][3:]) + 1
-    return f"LIB{number:04d}"
-
-@app.route("/")
-def dashboard():
-    return render_template("index.html")
-
-@app.route("/delete_book/<book_id>", methods=["POST"])
+from config import (
+    VALID_STATUSES,
+    VALID_CONDITIONS,
+    COPY_AVAILABLE
+)
+from database import conn, cur
+from helpers.book_helper import get_next_book_id
+books_bp = Blueprint("books", __name__)
+@books_bp.route("/delete_book/<book_id>", methods=["POST"])
 def delete_book(book_id):
 
     try:
@@ -29,23 +32,23 @@ def delete_book(book_id):
         if cur.rowcount == 0:
             conn.rollback()
             flash("Book not found.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         conn.commit()
         flash("Book deleted successfully!")
 
     except mysql.connector.Error as e:
         conn.rollback()
-        app.logger.exception(e)
+        current_app.logger.exception(e)
 
         if e.errno == 1451:
             flash("This book still has copies on record. Remove or reassign its copies before deleting the book.")
         else:
             flash("Unable to delete the book.")
 
-    return redirect(url_for("add_books"))
+    return redirect(url_for("books.add_books"))
 
-@app.route("/update_book", methods=["POST"])
+@books_bp.route("/update_book", methods=["POST"])
 def update_book():
 
     book_id = request.form["book_id"]
@@ -63,7 +66,7 @@ def update_book():
             raise ValueError
     except (ValueError, TypeError):
         flash("Purchase Price must be a valid non-negative number.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     if (
         not book_id
@@ -75,10 +78,9 @@ def update_book():
         or not entry_date
         or not language
         or not edition
-        or not purchase_price
     ):
         flash("Please fill all fields.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
 
     try:
@@ -111,19 +113,19 @@ def update_book():
         if cur.rowcount == 0:
             conn.rollback()
             flash("Book not found.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         conn.commit()
         flash("Book Updated Successfully!")
 
     except mysql.connector.Error as e:
         conn.rollback()
-        app.logger.exception(e)
+        current_app.logger.exception(e)
         flash("Unable to update the book.")
 
-    return redirect(url_for("add_books"))
+    return redirect(url_for("books.add_books"))
 
-@app.route("/add_books")
+@books_bp.route("/add_books")
 def add_books():
 
     search = request.args.get("search", "").strip()
@@ -164,7 +166,7 @@ def add_books():
             Book.EntryDate,
             Book.Language,
             Book.Edition,
-            COUNT(BookCopy.CopyID) AS TotalCopies,,
+            COUNT(BookCopy.CopyID) AS TotalCopies,
             Book.PurchasePrice
 
         FROM Book
@@ -212,19 +214,19 @@ def add_books():
     """
 
     cur.execute(query, values)
-    books = cur.fetchall()
+    books_list = cur.fetchall()
 
     return render_template(
         "add_books.html",
         categories=categories,
         shelves=shelves,
         next_book_id=next_book_id,
-        books=books,
+        books=books_list,
         today=date.today().isoformat(),
-        total_books=len(books)
+        total_books=len(books_list)
     )
 
-@app.route("/add_book", methods=["POST"])
+@books_bp.route("/add_book", methods=["POST"])
 def add_book():
 
     book_name = request.form["book_name"].strip().title()
@@ -233,9 +235,6 @@ def add_book():
     publication = request.form["publication"].strip().title()
     publication_date = request.form["publication_date"]
 
-    # FIX: entry_date was never validated even though it's inserted into
-    # both Book and BookCopy (DATE columns). Default to today if blank,
-    # matching the "today" default already offered in add_books' template.
     entry_date = request.form.get("entry_date", "").strip()
     if not entry_date:
         entry_date = date.today().isoformat()
@@ -247,18 +246,15 @@ def add_book():
         total_copies = int(request.form["total_copies"])
     except (ValueError, TypeError):
         flash("Invalid Total Copies.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
-    # FIX: purchase_price was passed straight into the INSERT with no
-    # validation — a bad value would only surface as a generic
-    # "Unable to add book." from the except block below.
     try:
         purchase_price = float(request.form["purchase_price"])
         if purchase_price < 0:
             raise ValueError
     except (ValueError, TypeError):
         flash("Purchase Price must be a valid non-negative number.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     copy_groups_raw = request.form.get("copy_groups", "")
 
@@ -273,17 +269,17 @@ def add_book():
         total_copies < 1
     ):
         flash("Please fill all required fields.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     try:
         copy_groups = json.loads(copy_groups_raw)
     except (json.JSONDecodeError, TypeError):
         flash("Copy allocation data was missing or invalid. Please try again.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     if not isinstance(copy_groups, list) or not copy_groups:
         flash("Please provide at least one copy allocation group.")
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     cleaned_groups = []
     allocated = 0
@@ -292,13 +288,13 @@ def add_book():
 
         if not isinstance(group, dict):
             flash("Copy allocation data was malformed. Please try again.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         try:
             quantity = int(group.get("quantity", 0))
         except (TypeError, ValueError):
             flash("Every group needs a valid whole number of copies.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         shelf = str(group.get("shelf", "")).strip()
         status = COPY_AVAILABLE
@@ -307,19 +303,19 @@ def add_book():
 
         if quantity < 1:
             flash("Every group must contain at least 1 copy.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         if not shelf:
             flash("Every group needs a Shelf.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         if status not in VALID_STATUSES:
             flash("Every group needs a valid Status.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         if condition not in VALID_CONDITIONS:
             flash("Every group needs a valid Condition.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         cur.execute("""
             SELECT Capacity
@@ -330,7 +326,7 @@ def add_book():
 
         if row is None:
             flash("Selected shelf does not exist.")
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         capacity = row[0]
 
@@ -341,15 +337,13 @@ def add_book():
         """, (shelf,))
         current_books = cur.fetchone()[0]
 
-        # FIX: this "if" had a mis-indented line above it (an extra space
-        # before "if"), which is a SyntaxError that would prevent the
-        # whole app from starting.
+
         if current_books + quantity > capacity:
             flash(
                 f"{shelf} only has "
                 f"{capacity - current_books} spaces remaining."
             )
-            return redirect(url_for("add_books"))
+            return redirect(url_for("books.add_books"))
 
         cleaned_groups.append(
             (quantity, shelf, COPY_AVAILABLE, condition, remark))
@@ -360,7 +354,7 @@ def add_book():
             f"Allocated copies ({allocated}) do not match "
             f"Total Copies ({total_copies})."
         )
-        return redirect(url_for("add_books"))
+        return redirect(url_for("books.add_books"))
 
     try:
         # Generate Book ID
@@ -448,13 +442,13 @@ def add_book():
 
     except mysql.connector.Error as e:
         conn.rollback()
-        app.logger.exception(e)
+        current_app.logger.exception(e)
         flash("Unable to add book.")
 
-    return redirect(url_for("add_books"))
+    return redirect(url_for("books.add_books"))
 
-@app.route("/books")
-def books():
+@books_bp.route("/books")
+def view_books():
 
     search = request.args.get("search", "").strip()
     search_by = request.args.get("search_by", "")
