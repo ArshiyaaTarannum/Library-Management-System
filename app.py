@@ -717,42 +717,6 @@ def delete_copy(copy_id):
 
     return redirect(url_for("inventory"))
 
-@app.route("/view_categories")
-def view_categories():
-
-    search = request.args.get("search", "").strip()
-
-    query = """
-        SELECT CategoryID, CategoryName
-        FROM Category
-        WHERE 1=1
-    """
-
-    values = []
-
-    if search:
-
-        query += """
-            AND (
-                CategoryID LIKE %s
-                OR CategoryName LIKE %s
-            )
-        """
-
-        values.append("%" + search + "%")
-        values.append("%" + search + "%")
-
-    query += " ORDER BY CategoryID"
-
-    cur.execute(query, values)
-
-    categories = cur.fetchall()
-
-    return render_template(
-        "view_categories.html",
-        categories=categories
-    )
-
 @app.route("/shelf")
 def shelf():
 

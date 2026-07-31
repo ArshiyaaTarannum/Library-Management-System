@@ -100,7 +100,6 @@ def add_category():
 
 # DELETE CATEGORY
 
-
 @category_bp.route("/delete_category/<category_id>")
 def delete_category(category_id):
 
@@ -120,7 +119,6 @@ def delete_category(category_id):
         flash("Cannot delete this category because books are assigned to it.")
 
     return redirect(url_for("category.category"))
-
 
 @category_bp.route("/update_category", methods=["POST"])
 def update_category():
@@ -145,3 +143,40 @@ def update_category():
     flash("Category Updated Successfully!")
 
     return redirect(url_for("categor.category"))
+
+
+@category_bp.route("/view_categories")
+def view_categories():
+
+    search = request.args.get("search", "").strip()
+
+    query = """
+        SELECT CategoryID, CategoryName
+        FROM Category
+        WHERE 1=1
+    """
+
+    values = []
+
+    if search:
+
+        query += """
+            AND (
+                CategoryID LIKE %s
+                OR CategoryName LIKE %s
+            )
+        """
+
+        values.append("%" + search + "%")
+        values.append("%" + search + "%")
+
+    query += " ORDER BY CategoryID"
+
+    cur.execute(query, values)
+
+    categories = cur.fetchall()
+
+    return render_template(
+        "view_categories.html",
+        categories=categories
+    )
