@@ -183,81 +183,81 @@
         Showing {{ showing_count }} of {{ total_copies }} total copies
     </p>
     <form action="{{ url_for('update_copy') }}" method="POST" class="form-container">
-    
+
         <div class="form-group">
-    
+
             <label for="edit_copy_id">Copy ID</label>
-    
+
             <input type="text" id="edit_copy_id" name="copy_id" readonly>
-    
+
         </div>
-    
+
         <div class="form-group">
-    
+
             <label for="edit_shelf">Shelf</label>
-    
+
             <select id="edit_shelf" name="shelf" required>
-    
+
                 {% for shelf in shelves %}
-    
+
                 <option value="{{ shelf[0] }}">
                     {{ shelf[1] }}
                 </option>
-    
+
                 {% endfor %}
-    
+
             </select>
-    
+
         </div>
-    
+
         <div class="form-group">
-    
+
             <label for="edit_status">Status</label>
-    
+
             <select id="edit_status" name="status" required>
-    
+
                 {% for status in valid_statuses %}
-    
+
                 <option value="{{ status }}">
                     {{ status }}
                 </option>
-    
+
                 {% endfor %}
-    
+
             </select>
-    
+
         </div>
-    
+
         <div class="form-group">
-    
+
             <label for="edit_condition">Condition</label>
-    
+
             <select id="edit_condition" name="condition" required>
-    
+
                 {% for condition in valid_conditions %}
-    
+
                 <option value="{{ condition }}">
                     {{ condition }}
                 </option>
-    
+
                 {% endfor %}
-    
+
             </select>
-    
+
         </div>
-    
+
         <div class="form-group">
-    
+
             <label for="edit_remark">Additional Remark</label>
-    
+
             <textarea id="edit_remark" name="remark" rows="3"></textarea>
-    
+
         </div>
-    
+
         <button type="submit" class="submit-btn">
             Update Copy
         </button>
-    
+
     </form>
 
     <!-- INVENTORY TABLE -->
@@ -457,10 +457,13 @@
                     Edit
                 </button>
 
-                <a href="{{ url_for('delete_copy', copy_id=copy[0]) }}" class="action-btn delete-btn"
-                    onclick="return confirm('Delete this copy?');">
-                    Delete
-                </a>
+                <form action="{{ url_for('copies.delete_copy', copy_id=copy[0]) }}" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Delete this copy?');">
+                
+                    <button type="submit" class="action-btn delete-btn">
+                        Delete
+                    </button>
+                    </form>
 
             </td>
 
@@ -482,7 +485,7 @@
 
 
     </table>
-    
+
     <hr>
 
 
