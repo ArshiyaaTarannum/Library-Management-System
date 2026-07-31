@@ -139,4 +139,4 @@ def delete_copy(copy_id):
         current_app.logger.exception(e)
         flash("Unable to delete copy.")
 
-    return redirect(url_for("inventory"))
+    return redirect(url_for("inventory.inventory"))
