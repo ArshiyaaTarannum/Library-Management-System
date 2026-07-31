@@ -10,12 +10,16 @@ from database import conn, cur
 from routes.category import category_bp
 from routes.policy import policy_bp
 from routes.books import books_bp
+from routes.copy import copies_bp
 from helpers.book_helper import get_next_book_id
+
 app = Flask(__name__)
 app.secret_key = "library_management_secret"
 app.register_blueprint(category_bp)
 app.register_blueprint(policy_bp)
 app.register_blueprint(books_bp)
+app.register_blueprint(copies_bp)
+
 from config import (
     VALID_STATUSES,
     VALID_CONDITIONS,
@@ -1108,11 +1112,6 @@ def update_member():
 
 @app.route("/deactivate_member/<member_id>")
 def deactivate_member(member_id):
-
-    # Members are never deleted - only deactivated. Deleting would
-    # either cascade-destroy their IssueTransaction history or be
-    # blocked by the FK, and the transaction/fine history must be
-    # kept for reporting even after someone stops being a member.
 
     active_issues = get_active_issue_count(member_id)
 
