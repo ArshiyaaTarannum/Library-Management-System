@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    render_template,
     request,
     redirect,
     url_for,
@@ -11,11 +12,9 @@ from config import VALID_SHELF_STATUS
 import mysql.connector
 
 from database import conn, cur
-from helpers.book_helper import get_next_shelf_id
+from helpers.shelf_helper import get_next_shelf_id
 
-shelf_bp= Blueprint("shelf",__name__)
-next_shelf_id = get_next_shelf_id()
-shelf_id = get_next_shelf_id()
+shelf_bp = Blueprint("shelf", __name__)
 
 @shelf_bp.route("/shelf")
 def shelf():
@@ -57,20 +56,7 @@ def shelf():
 
     # Generate next Shelf ID
 
-    cur.execute("""
-        SELECT ShelfID
-        FROM Shelf
-        ORDER BY ShelfID DESC
-        LIMIT 1
-    """)
-
-    last_shelf = cur.fetchone()
-
-    if last_shelf is None:
-        next_shelf_id = "SH001"
-    else:
-        number = int(last_shelf[0][2:]) + 1
-        next_shelf_id = f"SH{number:03d}"
+    next_shelf_id = get_next_shelf_id()
 
     return render_template(
         "shelf.html",
@@ -118,20 +104,7 @@ def add_shelf():
 
     # Generate Shelf ID
 
-    cur.execute("""
-        SELECT ShelfID
-        FROM Shelf
-        ORDER BY ShelfID DESC
-        LIMIT 1
-    """)
-
-    last = cur.fetchone()
-
-    if last is None:
-        shelf_id = "SH001"
-    else:
-        number = int(last[0][2:]) + 1
-        shelf_id = f"SH{number:03d}"
+    shelf_id = get_next_shelf_id()
 
     try:
 
@@ -270,4 +243,4 @@ def delete_shelf(shelf_id):
 
         flash("Shelf contains books and cannot be deleted.")
 
-    return redirect(url_for("shelf"))
+    return redirect(url_for("shelf.shelf"))
