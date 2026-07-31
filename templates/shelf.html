@@ -2,241 +2,244 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Library Shelf Management</title>
+    <title>Library Shelf Management</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
 <body>
-<h1>Library Shelf Management</h1>
+    <h1>Library Shelf Management</h1>
 
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
 
-<div class="flash-message">
-    {{ message }}
-</div>
+    <div class="flash-message">
+        {{ message }}
+    </div>
 
-{% endfor %}
-{% endif %}
-{% endwith %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
-<p class="subtitle">
-    Create, edit and manage library shelves and their storage capacities.
-</p>
+    <p class="subtitle">
+        Create, edit and manage library shelves and their storage capacities.
+    </p>
 
-<!-- SEARCH -->
+    <!-- SEARCH -->
 
-<div class="top-search">
+    <div class="top-search">
 
-    <button id="search-icon" class="search-icon">
-        🔍
-    </button>
-
-</div>
-
-<div id="search-box" class="search-box">
-
-    <form action="{{ url_for('shelf') }}" method="GET">
-
-        <input type="text" name="search" placeholder="Search Shelf..." value="{{ request.args.get('search','') }}">
-
-        <button type="submit">
-
-            Search
-
+        <button id="search-icon" class="search-icon">
+            🔍
         </button>
 
-        <a href="{{ url_for('shelf') }}" class="clear-btn">
+    </div>
 
-            Clear
+    <div id="search-box" class="search-box">
 
-        </a>
+        <form action="{{ url_for('shelf') }}" method="GET">
 
-    </form>
+            <input type="text" name="search" placeholder="Search Shelf..." value="{{ request.args.get('search','') }}">
 
-</div>
+            <button type="submit">
 
-<!-- FORM -->
-
-<div class="container">
-
-    <form id="shelf-form" action="{{ url_for('add_shelf') }}" method="POST" autocomplete="off">
-
-        <input type="hidden" name="shelf_id" id="shelf_id">
-
-        <label>Shelf ID</label>
-
-        <input type="text" id="display_shelf_id" value="{{ next_shelf_id }}" readonly>
-
-        <label>Shelf Name</label>
-
-        <input type="text" name="shelf_name" id="shelf_name" required>
-
-        <label>Location</label>
-
-        <input type="text" name="location" id="location" placeholder="Example: Ground Floor - Aisle 2">
-
-        <label>Capacity</label>
-
-        <input type="number" name="capacity" id="capacity" min="1" required>
-
-        <label>Status</label>
-
-        <select name="status" id="status">
-
-            <option value="Active">
-
-                Active
-
-            </option>
-
-            <option value="Inactive">
-
-                Inactive
-
-            </option>
-
-        </select>
-
-        <button type="submit" id="save-shelf">
-
-            Save Shelf
-
-        </button>
-
-        <button type="reset" onclick="resetShelfForm()">
-
-            Clear
-
-        </button>
-
-    </form>
-
-</div>
-
-<!-- TABLE -->
-
-<table class="category-table">
-
-    <tr>
-
-        <th>Shelf ID</th>
-        <th>Shelf Name</th>
-        <th>Location</th>
-        <th>Capacity</th>
-        <th>Status</th>
-        <th>Edit</th>
-        <th>Delete</th>
-
-    </tr>
-
-    {% if shelves %}
-
-    {% for shelf in shelves %}
-
-    <tr ondblclick="loadShelf(
-'{{ shelf[0] }}',
-'{{ shelf[1] }}',
-'{{ shelf[2] }}',
-'{{ shelf[3] }}',
-'{{ shelf[4] }}'
-)">
-
-        <td>{{ shelf[0] }}</td>
-
-        <td>{{ shelf[1] }}</td>
-
-        <td>{{ shelf[2] }}</td>
-
-        <td>{{ shelf[3] }}</td>
-
-        <td>{{ shelf[4] }}</td>
-
-        <td>
-
-            <button type="button" class="edit-btn" onclick="loadShelf(
-'{{ shelf[0] }}',
-'{{ shelf[1] }}',
-'{{ shelf[2] }}',
-'{{ shelf[3] }}',
-'{{ shelf[4] }}'
-)">
-
-                Edit
+                Search
 
             </button>
 
-        </td>
+            <a href="{{ url_for('shelf') }}" class="clear-btn">
 
-        <td>
-
-            <a href="{{ url_for('delete_shelf',
-shelf_id=shelf[0]) }}" class="delete-btn" onclick="return confirm('Delete this shelf?')">
-
-                Delete
+                Clear
 
             </a>
 
-        </td>
+        </form>
 
-    </tr>
+    </div>
 
-    {% endfor %}
+    <!-- FORM -->
 
-    {% else %}
+    <div class="container">
 
-    <tr>
+        <form id="shelf-form" action="{{ url_for('add_shelf') }}" method="POST" autocomplete="off">
 
-        <td colspan="7">
+            <input type="hidden" name="shelf_id" id="shelf_id">
 
-            No shelves found.
+            <label>Shelf ID</label>
 
-        </td>
+            <input type="text" id="display_shelf_id" value="{{ next_shelf_id }}" readonly>
 
-    </tr>
+            <label>Shelf Name</label>
 
-    {% endif %}
+            <input type="text" name="shelf_name" id="shelf_name" required>
 
-</table>
+            <label>Location</label>
 
-<!-- NAVIGATION -->
+            <input type="text" name="location" id="location" placeholder="Example: Ground Floor - Aisle 2">
 
-<div class="navigation-buttons">
+            <label>Capacity</label>
 
-    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+            <input type="number" name="capacity" id="capacity" min="1" required>
 
-        Dashboard
+            <label>Status</label>
 
-    </a>
+            <select name="status" id="status">
 
-    <a href="{{ url_for('category.category') }}" class="nav-btn">
+                <option value="Active">
 
-        Category Management
+                    Active
 
-    </a>
+                </option>
 
-    <a href="{{ url_for('add_books') }}" class="nav-btn">
+                <option value="Inactive">
 
-        Book Management
+                    Inactive
 
-    </a>
+                </option>
 
-    <a href="{{ url_for('inventory') }}" class="nav-btn">
+            </select>
 
-        Inventory
+            <button type="submit" id="save-shelf">
 
-    </a>
+                Save Shelf
 
-</div>
+            </button>
 
-<script src="{{ url_for('static',
+            <button type="reset" onclick="resetShelfForm()">
+
+                Clear
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- TABLE -->
+
+    <table class="category-table">
+
+        <tr>
+
+            <th>Shelf ID</th>
+            <th>Shelf Name</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th>Edit</th>
+            <th>Delete</th>
+
+        </tr>
+
+        {% if shelves %}
+
+        {% for shelf in shelves %}
+
+        <tr ondblclick="loadShelf(
+'{{ shelf[0] }}',
+'{{ shelf[1] }}',
+'{{ shelf[2] }}',
+'{{ shelf[3] }}',
+'{{ shelf[4] }}'
+)">
+
+            <td>{{ shelf[0] }}</td>
+
+            <td>{{ shelf[1] }}</td>
+
+            <td>{{ shelf[2] }}</td>
+
+            <td>{{ shelf[3] }}</td>
+
+            <td>{{ shelf[4] }}</td>
+
+            <td>
+
+                <button type="button" class="edit-btn" onclick="loadShelf(
+'{{ shelf[0] }}',
+'{{ shelf[1] }}',
+'{{ shelf[2] }}',
+'{{ shelf[3] }}',
+'{{ shelf[4] }}'
+)">
+
+                    Edit
+
+                </button>
+
+            </td>
+
+            <td>
+
+                <form action="{{ url_for('shelf.delete_shelf', shelf_id=shelf[0]) }}" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Delete this shelf?')">
+
+                    <button type="submit" class="delete-btn">
+                        Delete
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        {% else %}
+
+        <tr>
+
+            <td colspan="7">
+
+                No shelves found.
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+    <!-- NAVIGATION -->
+
+    <div class="navigation-buttons">
+
+        <a href="{{ url_for('dashboard') }}" class="nav-btn">
+
+            Dashboard
+
+        </a>
+
+        <a href="{{ url_for('category.category') }}" class="nav-btn">
+
+            Category Management
+
+        </a>
+
+        <a href="{{ url_for('add_books') }}" class="nav-btn">
+
+            Book Management
+
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-btn">
+
+            Inventory
+
+        </a>
+
+    </div>
+
+    <script src="{{ url_for('static',
 filename='script.js') }}"></script>
 
 </body>
+
 </html>
