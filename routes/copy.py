@@ -29,11 +29,11 @@ def update_copy():
 
     if status not in VALID_STATUSES:
         flash("Invalid status.")
-        return redirect(url_for("inventory"))
+        return redirect(url_for("inventory.inventory"))
 
     if condition not in VALID_CONDITIONS:
         flash("Invalid condition.")
-        return redirect(url_for("inventory"))
+        return redirect(url_for("inventory.inventory"))
 
     # Check copy exists and get current shelf
 
@@ -47,7 +47,7 @@ def update_copy():
 
     if row is None:
         flash("Copy not found.")
-        return redirect(url_for("inventory"))
+        return redirect(url_for("inventory.inventory"))
 
     old_shelf = row[0]
 
@@ -63,7 +63,7 @@ def update_copy():
 
     if row is None:
         flash("Invalid shelf.")
-        return redirect(url_for("inventory"))
+        return redirect(url_for("inventory.inventory"))
 
     capacity = row[0]
 
@@ -81,7 +81,7 @@ def update_copy():
 
         if used >= capacity:
             flash("Selected shelf is already full.")
-            return redirect(url_for("inventory"))
+            return redirect(url_for("inventory.inventory"))
 
     try:
 
@@ -103,7 +103,7 @@ def update_copy():
         if cur.rowcount == 0:
             conn.rollback()
             flash("Copy not found.")
-            return redirect(url_for("inventory"))
+            return redirect(url_for("inventory.inventory"))
 
         conn.commit()
 
@@ -115,7 +115,7 @@ def update_copy():
         current_app.logger.exception(e)
         flash("Unable to update copy.")
 
-    return redirect(url_for("inventory"))
+    return redirect(url_for("inventory.inventory"))
 
 @copies_bp.route("/delete_copy/<copy_id>", methods=["POST"])
 def delete_copy(copy_id):
@@ -129,7 +129,7 @@ def delete_copy(copy_id):
         if cur.rowcount == 0:
             conn.rollback()
             flash("Copy not found.")
-            return redirect(url_for("inventory"))
+            return redirect(url_for("inventory.inventory"))
 
         conn.commit()
         flash("Copy deleted successfully!")
