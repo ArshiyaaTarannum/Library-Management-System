@@ -241,21 +241,19 @@ Members · HTML
 
                 {% if member[6] %}
 
-                <a href="{{ url_for('deactivate_member', member_id=member[0]) }}" class="delete-btn"
-                    onclick="return confirm('Deactivate this member?')">
-
-                    Deactivate
-
-                </a>
+                <form action="{{ url_for('members.deactivate_member', member_id=member[0]) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="delete-btn" onclick="return confirm('Deactivate this member?')">
+                        Deactivate
+                    </button>
+                    </form>
 
                 {% else %}
 
-                <a href="{{ url_for('reactivate_member', member_id=member[0]) }}" class="edit-btn"
-                    onclick="return confirm('Reactivate this member?')">
-
-                    Reactivate
-
-                </a>
+                <form action="{{ url_for('members.reactivate_member', member_id=member[0]) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="action-btn" onclick="return confirm('Reactivate this member?')">
+                        Reactivate
+                    </button>
+                    </form>
 
                 {% endif %}
 
