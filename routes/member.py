@@ -9,7 +9,7 @@ from flask import (
 )
 
 from datetime import date
-from helpers.members_helper import def generate_member_id
+from helpers.members_helper import generate_member_id
 import mysql.connector
 from database import conn, cur
 members_bp=Blueprint("members", __name__)
