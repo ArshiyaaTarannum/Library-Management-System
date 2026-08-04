@@ -109,7 +109,10 @@ function resetBookForm() {
 
 
     const displayBookId = document.getElementById("display_book_id");
-    displayBookId.value = displayBookId.dataset.nextId;
+
+    if (displayBookId) {
+        displayBookId.value = displayBookId.dataset.nextId;
+    }
 
 
     setAddOnlyVisible(true);
@@ -431,7 +434,7 @@ function togglePayForm(transactionId) {
 
 document.addEventListener("DOMContentLoaded", initAddBookWorkflow);
 
-// ================= CATEGORY =================
+// CATEGORY 
 
 function loadCategory(id, name) {
 
@@ -457,60 +460,6 @@ function resetCategoryForm() {
 
 }
 
-// ================= BORROW =================
-
-function loadBorrow(
-    issueId,
-    bookId,
-    studentName,
-    studentId,
-    issueDate,
-    dueDate,
-    returnDate,
-    entryDate,
-    status
-) {
-
-    document.getElementById("issue_id").value = issueId;
-
-    document.getElementById("display_issue_id").value = issueId;
-
-    document.getElementById("book_id").value = bookId;
-
-    document.getElementById("student_name").value = studentName;
-
-    document.getElementById("student_id").value = studentId;
-
-    document.getElementById("issue_date").value = issueDate;
-
-    document.getElementById("due_date").value = dueDate;
-
-    document.getElementById("return_date").value = returnDate || "";
-
-    document.getElementById("entry_date").value = entryDate;
-
-    document.getElementById("borrow-form").action = "/update_borrow";
-
-    document.getElementById("save-borrow").innerHTML = "Update Record";
-
-}
-
-function resetBorrowForm() {
-
-    document.getElementById("borrow-form").reset();
-
-    document.getElementById("borrow-form").action = "/borrow_book";
-
-    document.getElementById("save-borrow").innerHTML = "Issue Book";
-
-    document.getElementById("issue_id").value = "";
-
-    document.getElementById("entry_date").value =
-        new Date().toISOString().split("T")[0];
-
-    document.getElementById("status").value = "Issued";
-
-}
 
 // ================= ENTER KEY =================
 
@@ -589,6 +538,8 @@ document.addEventListener("keydown", function (e) {
 
 });
 
+const memberForm = document.getElementById("member-form");
+
 function editCopy(copyId, shelf, status, condition, remark) {
 
     document.getElementById("edit_copy_id").value = copyId;
@@ -647,9 +598,9 @@ function resetMemberForm() {
         new Date().toISOString().split("T")[0];
 
     const displayMemberId = document.getElementById("display_member_id");
-    displayMemberId.value = displayMemberId.dataset.nextId;
-
-}
+    if (displayMemberId) {
+        displayMemberId.value = displayMemberId.dataset.nextId;
+    }
 
 // ================= BORROW =================
 
@@ -707,9 +658,9 @@ function resetBorrowForm() {
     document.getElementById("status").value = "Issued";
 
 }
-// ==============================
+
 // Library Policy
-// ==============================
+
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -741,9 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// ==============================
-// Borrow Limit
-// ==============================
+    // Borrow Limit
 
 function toggleBookLimit() {
 
@@ -767,9 +716,7 @@ function toggleBookLimit() {
 }
 
 
-// ==============================
-// Loan Period
-// ==============================
+    // Loan Period
 
 function toggleLoan() {
 
@@ -792,10 +739,7 @@ function toggleLoan() {
 
 }
 
-
-// ==============================
-// Membership
-// ==============================
+    // Membership
 
 function toggleMembership() {
 
@@ -819,9 +763,7 @@ function toggleMembership() {
 }
 
 
-// ==============================
-// Renewal
-// ==============================
+    // Renewal
 
 function toggleRenewal() {
 
@@ -858,5 +800,4 @@ function toggleRenewal() {
         input.title = "Renewals are disabled.";
 
     }
-
 }
