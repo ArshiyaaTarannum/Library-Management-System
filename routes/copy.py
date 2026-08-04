@@ -13,7 +13,10 @@ from database import conn, cur
 
 from config import (
     VALID_STATUSES,
-    VALID_CONDITIONS
+    VALID_CONDITIONS,
+    COPY_AVAILABLE,
+    COPY_DAMAGED,
+    COPY_LOST,
 )
 
 copies_bp = Blueprint("copies", __name__)
@@ -90,7 +93,7 @@ def update_copy():
             SET
                 Shelf=%s,
                 Status=%s,
-                `Condition`=%s,
+                Condition`=%s,
                 AdditionalRemark=%s
             WHERE CopyID=%s
         """, (
