@@ -6,16 +6,23 @@ from flask import (
 )
 
 from config import (
-    INVENTORY_SORT_COLUMNS,
     VALID_STATUSES,
     VALID_CONDITIONS,
-    BORROW_LIMIT
-) 
-
+    INVENTORY_SORT_COLUMNS,
+    BORROW_LIMIT,
+    COPY_AVAILABLE,
+    COPY_ISSUED,
+    COPY_DAMAGED,
+    COPY_LOST,
+)
 
 from database import cur
-inventory_bp=Blueprint("inventory", __name__)
 
+from helpers.borrow_helper import (
+    get_active_members_with_issue_counts,
+)
+
+inventory_bp = Blueprint("inventory", __name__)
 def build_inventory_sort_links(current_sort, current_dir):
 
 
@@ -70,32 +77,32 @@ def inventory():
     cur.execute("""
         SELECT COUNT(*)
         FROM BookCopy
-        WHERE Status='Available'
-    """)
+        WHERE Status=%s
+    """, (COPY_AVAILABLE,))
 
     available = cur.fetchone()[0]
 
     cur.execute("""
         SELECT COUNT(*)
         FROM BookCopy
-        WHERE Status='Issued'
-    """)
+        WHERE Status=%s
+    """, (COPY_ISSUED,))
 
     issued = cur.fetchone()[0]
 
     cur.execute("""
         SELECT COUNT(*)
         FROM BookCopy
-        WHERE Status='Damaged'
-    """)
+        WHERE Status=%s
+    """, (COPY_DAMAGED,))
 
     damaged = cur.fetchone()[0]
 
     cur.execute("""
         SELECT COUNT(*)
         FROM BookCopy
-        WHERE Status='Lost'
-    """)
+        WHERE Status=%s
+    """, (COPY_LOST,))
 
     lost = cur.fetchone()[0]
 
