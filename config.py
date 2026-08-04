@@ -1,8 +1,102 @@
-VALID_STATUSES = {"Available", "Issued", "Damaged", "Lost"}
-VALID_CONDITIONS = {"Excellent", "Good", "Fair", "Worn", "Damaged", "Other"}
-VALID_SHELF_STATUS = {"Active", "Inactive"}
 
-VALID_PAYMENT_MODES = {"Cash", "UPI", "Card"}
+# BOOK COPY STATUS
+
+
+COPY_AVAILABLE = "Available"
+COPY_ISSUED = "Issued"
+COPY_DAMAGED = "Damaged"
+COPY_LOST = "Lost"
+
+VALID_STATUSES = {
+    COPY_AVAILABLE,
+    COPY_ISSUED,
+    COPY_DAMAGED,
+    COPY_LOST,
+}
+
+
+# BOOK CONDITION
+
+
+CONDITION_EXCELLENT = "Excellent"
+CONDITION_GOOD = "Good"
+CONDITION_FAIR = "Fair"
+CONDITION_WORN = "Worn"
+CONDITION_DAMAGED = "Damaged"
+CONDITION_OTHER = "Other"
+
+VALID_CONDITIONS = {
+    CONDITION_EXCELLENT,
+    CONDITION_GOOD,
+    CONDITION_FAIR,
+    CONDITION_WORN,
+    CONDITION_DAMAGED,
+    CONDITION_OTHER,
+}
+
+
+# SHELF STATUS
+
+
+SHELF_ACTIVE = "Active"
+SHELF_INACTIVE = "Inactive"
+
+VALID_SHELF_STATUS = {
+    SHELF_ACTIVE,
+    SHELF_INACTIVE,
+}
+
+
+# MEMBER STATUS
+
+
+MEMBER_ACTIVE = 1
+MEMBER_INACTIVE = 0
+
+
+# BORROW TRANSACTION STATUS
+
+
+BORROW_ISSUED = "Issued"
+BORROW_RETURNED = "Returned"
+
+VALID_BORROW_STATUS = {
+    BORROW_ISSUED,
+    BORROW_RETURNED,
+}
+
+
+# PAYMENT STATUS
+
+
+PAYMENT_PENDING = "Pending"
+PAYMENT_PAID = "Paid"
+PAYMENT_WAIVED = "Waived"
+
+VALID_PAYMENT_STATUS = {
+    PAYMENT_PENDING,
+    PAYMENT_PAID,
+    PAYMENT_WAIVED,
+}
+
+
+# PAYMENT MODES
+
+
+PAYMENT_CASH = "Cash"
+PAYMENT_UPI = "UPI"
+PAYMENT_CARD = "Card"
+
+VALID_PAYMENT_MODES = {
+    PAYMENT_CASH,
+    PAYMENT_UPI,
+    PAYMENT_CARD,
+}
+
+
+# INVENTORY SORT COLUMNS
+
+
 INVENTORY_SORT_COLUMNS = {
     "copy_id": "BookCopy.CopyID",
     "book_id": "BookCopy.BookID",
@@ -13,6 +107,10 @@ INVENTORY_SORT_COLUMNS = {
     "condition": "BookCopy.`Condition`",
     "date_added": "BookCopy.DateAdded",
 }
+
+
+# BORROW SORT COLUMNS
+
 
 BORROW_SORT_COLUMNS = {
     "transaction_id": "IssueTransaction.TransactionID",
@@ -27,13 +125,17 @@ BORROW_SORT_COLUMNS = {
     "fine": "IssueTransaction.FineAmount",
     "payment_status": "IssueTransaction.PaymentStatus",
 }
-# ---------------- LIBRARY SETTINGS ----------------
+
+
+# LIBRARY SETTINGS
+
 
 BORROW_LIMIT = 5
-
 LOAN_PERIOD_DAYS = 14
 
-FINE_BASE_RATE = 5                 # ₹5/day for first month
-FINE_RATE_STEP = 5                 # Increase by ₹5/day every 30 days
+# FINE SETTINGS
+
+FINE_BASE_RATE = 5
+FINE_RATE_STEP = 5
 FINE_MONTH_LENGTH_DAYS = 30
-FINE_CAP_BUFFER = 100              # Maximum fine = Purchase Price + ₹100
+FINE_CAP_BUFFER = 100
