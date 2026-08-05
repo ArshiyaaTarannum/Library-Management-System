@@ -3,374 +3,322 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Library Management System</title>
+    <title>Library Management System</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
 </head>
 
-
 <body>
 
+    <!-- HERO -->
 
-<!-- HERO -->
+    <section class="hero">
 
-<section class="hero">
+        <h1>
+            Library Management System
+        </h1>
 
-<h1>
- Library Management System
-</h1>
+        <p class="hero-subtitle">
+            Web-Based Library Administration Platform
+            </p>
+            <p class="hero-description">
+                A Flask-based application designed to manage library resources,
+                inventory, members and circulation through a structured and
+                centralized management system.
+            </p>
+            <div class="hero-buttons">
 
+    <a href="#librarian" class="nav-btn">
+        Librarian Portal
+    </a>
+    
+    <a href="#reader" class="nav-btn">
+        Reader Portal
+    </a>
+    
+    </div>
+                <p class="hero-quote">
+                    "Knowledge grows when it is shared."
+                </p>
 
-<p class="hero-subtitle">
-Digital Library Administration Portal
-</p>
+    </section>
 
+    <!-- LIBRARIAN PORTAL -->
 
-<p class="hero-quote">
-"Knowledge grows when it is shared."
-</p>
+    <section id="librarian" class="portal-section">
 
+        <div class="section-title">
 
-</section>
+            <span class="section-line"></span>
 
-<!-- LIBRARIAN SECTION -->
+            <h2>
+                Librarian Portal
+            </h2>
 
+            <span class="section-line"></span>
 
-<div class="section-title">
+        </div>
 
-<span class="section-line"></span>
+        <p class="portal-subtitle">
 
-<h2>
-Librarian Portal
-</h2>
+            Access the administrative dashboard to manage books,
+            inventory, members, borrowing records and library policies.
 
-<span class="section-line"></span>
+        </p>
 
+        <div class="portal-dashboard">
 
-</div>
+            <div class="portal-card">
 
+                <h2>
+                    Administrative Dashboard
+                    </h2>
 
-<p class="portal-subtitle">
+                <p>
 
-Manage books, categories and maintain the library collection.
+                    Manage all library operations through a centralized
+                    administration interface.
 
-</p>
+                </p>
 
+                <a href="{{ url_for('index') }}" class="nav-btn">
 
-<div class="dashboard">
+                    Open Dashboard
 
+                </a>
 
-<div class="dashboard-card">
+            </div>
 
+        </div>
 
-<h2>
-Book Management
-</h2>
+    </section>
 
-<p>
+    <!-- READER PORTAL -->
 
-Add new books, update existing records,
-search books and manage the complete collection.
+    <section id="reader" class="portal-section">
 
-</p>
+        <div class="section-title">
 
+            <span class="section-line"></span>
 
-<a 
-href="{{ url_for('books.add_books') }}"
-class="nav-btn">
+            <h2>
+                Reader Portal
+            </h2>
 
-Open Book Management
+            <span class="section-line"></span>
 
-</a>
+        </div>
 
+        <p class="portal-subtitle">
 
-</div>
+            Browse library resources and view institutional policies.
 
+        </p>
 
-<div class="dashboard-card">
+        <div class="portal-dashboard">
 
+            <div class="portal-card">
 
-<h2>
-Category Management
-</h2>
+                <h2>
+                    Library Catalogue
+                    </h2>
 
+                <p>
 
-<p>
+                    Search and view books available
+                    in the library catalogue.
 
-Create, edit, delete and organize
-book categories in the library.
+                </p>
 
-</p>
+                <a href="{{ url_for('books.view_books') }}" class="nav-btn">
 
+                    View Books
 
-<a 
-href="{{ url_for('category.category') }}"
-class="nav-btn">
+                </a>
 
-Open Category Management
+            </div>
 
-</a>
+            <div class="portal-card">
 
+                <h2>
+                    Browse Categories
+                </h2>
 
-</div>
+                <p>
 
+                    Explore categories available
+                    within the library collection.
 
+                </p>
 
-</div>
+                <a href="{{ url_for('category.view_categories') }}" class="nav-btn">
 
+                    View Categories
 
-<!-- READER SECTION -->
+                </a>
+                </div>
 
+            <div class="portal-card">
+            
+                <h2>
+                    Library Policy
+                </h2>
+                <p>
+                    View borrowing policies, loan periods,
+                    renewal rules and fine information.
+                </p>
+                <a href="{{ url_for('library_rules') }}" class="nav-btn">
+                    View Policy
+                </a>
 
-<div class="section-title">
+            </div>
+            </div>
+            </section>
 
+    <!-- SYSTEM FEATURES -->
+    <section class="project-section">
+        <div class="section-title">
+            <span class="section-line"></span>
+            <h2>
+                Core Modules
+            </h2>
+            <span class="section-line"></span>
 
-<span class="section-line"></span>
+        </div>
+        <p class="portal-subtitle">
+            The application is organized into modular components designed to
+            support library administration, inventory management and reader
+            services.
 
+        </p>
+        
+        <div class="project-boxes">
+            <div class="project-card">
 
-<h2>
-Reader Portal
-</h2>
+                <h2>
+                    Library Administration
+                    </h2>
+                <ul>
+                    <li>Book Management</li>
+                    <li>Category Management</li>
+                    <li>Automatic ID Generation</li>
+                    <li>Advanced Search and Sorting</li>
+                    <li>Book Copy Management</li>
+                    <li>Shelf Management</li>
+                    <li>Inventory Tracking</li>
+                
+                </ul>
+                
+                </div>
 
-<span class="section-line"></span>
+            <div class="project-card">
+                <h2>
+                    Circulation Management
+                </h2>
 
-</div>
+                <ul>
 
-<p class="portal-subtitle">
+                    <li>Member Management</li>
 
-Browse available books and categories.
+                    <li>Book Issue and Return</li>
 
-</p>
+                    <li>Borrow Limit Validation</li>
 
-<div class="dashboard">
+                    <li>Due Date Tracking</li>
+                    <li>Fine Calculation</li>
+                    <li>Payment History</li>
+                    <li>Library Policy Management</li>
+                    </ul>
 
-<div class="dashboard-card">
+            </div>
 
+        </div>
+        </section>
 
-<h2>
-Browse Books
-</h2>
+    <!-- SYSTEM INFORMATION -->
+    <section class="system-info">
 
+        <div class="section-title">
+            <span class="section-line"></span>
+            <h2>Technology Stack</h2>
+            <span class="section-line"></span>
+        </div>
+        <p class="portal-subtitle">
+            Built using modern web technologies with a Flask backend and MySQL database.
+        </p>
+        <div class="table-container">
+            <table class="info-table">
 
-<p>
+                <tr>
+                    <td>Language</td>
+                    <td>Python</td>
+                </tr>
 
-Search and view books available
-in the library catalogue.
+                <tr>
+                    <td>Framework</td>
+                    <td>Flask</td>
+                    </tr>
 
-</p>
+                <tr>
+                    <td>Database</td>
+                    <td>MySQL</td>
+                </tr>
 
-<a 
-href="{{ url_for('books') }}"
-class="nav-btn">
+                <tr>
+                    <td>Frontend</td>
+                    <td>HTML • CSS • JavaScript</td>
+                    </tr>
 
-View Books
+            </table>
 
-</a>
+        </div>
+        </section>
 
-</div>
 
-<div class="dashboard-card">
 
+    <section class="project-section">
 
-<h2>
-Browse Categories
-</h2>
+        <div class="vision-quote">
 
-<p>
+            <p>
+                A digital approach towards organizing knowledge,
+                managing resources and improving the library experience.
+            </p>
 
-Explore different book categories
-available in the library.
+        </div>
 
-</p>
+    </section>
+    <!-- FOOTER -->
 
-<a 
-href="{{ url_for('view_categories') }}"
-class="nav-btn">
+    <footer class="closing-section">
 
-View Categories
+        <div class="signature">
 
-</a>
-</div>
+            <p class="footer-label">
+                Designed & Developed by
+            </p>
+            <h2>
+                Arshiya Tarannum
+            </h2>
+            <p class="footer-version">
+                Library Management System
+            </p>
+            
+            <p class="footer-version">
+                Version 0.7
+            </p>
+            <p class="footer-version">
+                Python • Flask • MySQL • HTML • CSS • JavaScript
+            </p>
 
+        </div>
 
-</div>
-
-<hr class="dashboard-divider">
-
-<!-- SYSTEM INFO -->
-
-
-<div class="system-info">
-
-
-<h2>
-System Information
-</h2>
-
-
-
-<table class="info-table">
-
-
-<tr>
-
-<td>
-Application
-</td>
-
-<td>
-Library Management System
-</td>
-
-</tr>
-
-
-
-<tr>
-
-<td>
-Framework
-</td>
-
-<td>
-Flask
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-Database
-</td>
-
-<td>
-MySQL
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-Frontend
-</td>
-
-<td>
-HTML • CSS • JavaScript
-</td>
-
-</tr>
-
-</table>
-
-
-</div>
-
-<!-- PROJECT INTRODUCTION -->
-
-<section class="project-section">
-
-
-<div class="vision-quote">
-
-<h2>
-"Every book holds a story, and every system creates a pathway to discover it."
-</h2>
-
-<p>
-A digital approach towards organizing knowledge,
-managing resources and improving the library experience.
-</p>
-
-</div>
-
-<div class="project-boxes">
-
-<div class="project-card">
-
-<h2>
- Completed Work
-</h2>
-
-<ul>
-
-<li>Book Management System</li>
-
-<li>Category Management System</li>
-
-<li>Add, Update and Delete Operations</li>
-
-<li>Search functionality for books and categories</li>
-
-<li>Automatic ID generation</li>
-
-<li>Flask backend integration</li>
-
-<li>MySQL database connectivity</li>
-
-<li>Reader view with read-only access</li>
-
-</ul>
-
-</div>
-
-<div class="project-card">
-
-<h2>
- Future Enhancements
-</h2>
-
-<ul>
-
-<li>User Authentication and Login System</li>
-
-<li>Student / Member Management</li>
-
-<li>Book Issue and Return System</li>
-
-<li>Due Date Tracking</li>
-
-<li>Fine Calculation Management</li>
-
-<li>Book Availability Status</li>
-
-<li>Dashboard Analytics</li>
-
-<li>Email Notifications and Reminders</li>
-
-</ul>
-
-</div>
-
-</div>
-
-</section>
-<!-- FOOTER -->
-
-<section class="closing-section">
-
-<div class="signature">
-
-<p>
-Designed & Developed by
-</p>
-
-<h2>
-Arshiya Tarannum
-</h2>
-
-</div>
-
-</section>
-
-
-
-
+    </footer>
 
 </body>
 
