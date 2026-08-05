@@ -53,7 +53,7 @@
 
                 <label>Library Name</label>
 
-                <input type="text" name="library_name" value="{{ policy[1] if policy else '' }}" required>
+                <input type="text" name="library_name" value="{{ policy[5] if policy else '' }}" required>
 
                 <label>Borrow Limit</label>
 
@@ -227,11 +227,8 @@
 
                     <label>Maximum Renewals</label>
 
-                    <input type="number" id="max_renewals" name="max_renewals" min="1" placeholder="Example: 2" {% if policy and policy[10]>
-                    0 %}
-                    value="{{ policy[10] }}"
-                    {% endif %}
-                    >
+                    <input type="number" id="max_renewals" name="max_renewals" min="1" placeholder="Example: 2"
+                        value="{{ policy[10] if policy and policy[10] > 0 else '' }}">
 
                 </div>
 
