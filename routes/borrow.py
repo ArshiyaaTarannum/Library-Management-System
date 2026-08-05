@@ -18,19 +18,6 @@ from config import (
     BORROW_LIMIT,
     LOAN_PERIOD_DAYS,
     BORROW_SORT_COLUMNS,
-
-    COPY_AVAILABLE,
-    COPY_ISSUED,
-
-    BORROW_ISSUED,
-    BORROW_RETURNED,
-
-    MEMBER_ACTIVE,
-
-    PAYMENT_PENDING,
-    PAYMENT_PAID,
-    PAYMENT_WAIVED,
-
     VALID_PAYMENT_MODES,
 )
 from helpers.borrow_helper import (
