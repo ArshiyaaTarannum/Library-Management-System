@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Library Borrowing Guidelines</title>
+    <title>Library Policy | Library Management System</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
@@ -202,7 +202,15 @@
 
     <br>
 
-    <h2 style="text-align:center;">Fine Schedule</h2>
+    <section class="fine-section">
+    
+        <h2 class="section-heading">
+            Fine Schedule
+        </h2>
+    
+        <p class="portal-subtitle">
+            The table below illustrates how overdue fines are applied according to the current library policy.
+        </p>
 
     <table class="category-table">
 
@@ -288,36 +296,32 @@
 
     <div class="flash-message">
 
-        <strong>Important Notice</strong>
-        
-        <br><br>
-        
-        • Members with unpaid fines may not be permitted to borrow additional books.<br>
+    <strong>Important Notice</strong>
+    
+    <br><br>
+    
+    • Members with unpaid fines may not be permitted to borrow additional books.<br>
+    • Borrowing requests exceeding the permitted limit will be declined automatically.<br>
+    • Fine calculations are performed automatically according to the library policy.<br>
+    • Library staff may refuse borrowing privileges if membership has expired.
 
-        • Borrowing requests exceeding the permitted limit will be declined automatically.<br>
+</div>
 
-        • Fine calculations are performed automatically according to the library policy.<br>
+<div class="navigation-buttons">
 
-        • Library staff may refuse borrowing privileges if membership has expired.
+    <a href="{{ url_for('index') }}" class="nav-btn">
+        Dashboard
+    </a>
 
-    </div>
+    <a href="{{ url_for('books.view_books') }}" class="nav-btn">
+        View Books
+    </a>
 
-    <div class="navigation-buttons">
+    <a href="{{ url_for('category.view_categories') }}" class="nav-btn">
+        View Categories
+    </a>
 
-        <a href="{{ url_for('dashboard') }}" class="nav-btn">
-            Dashboard
-        </a>
-
-        <a href="{{ url_for('member.members') }}" class="nav-btn">
-            Member Management
-        </a>
-
-        <a href="{{ url_for('inventory.inventory') }}" class="nav-btn">
-            Inventory
-        </a>
-
-    </div>
-
+</div>
 </body>
 
 </html>
