@@ -42,7 +42,7 @@
         class="search-box">
 
         <form
-            action="{{ url_for('view_categories') }}"
+            action="{{ url_for('category.view_categories') }}"
             method="GET">
 
             <input
@@ -58,7 +58,7 @@
             </button>
 
             <a
-                href="{{ url_for('view_categories') }}"
+                href="{{ url_for('category.view_categories') }}"
                 class="clear-btn">
 
                 Clear
@@ -115,7 +115,7 @@
     <div class="navigation-buttons">
 
         <a
-            href="{{ url_for('dashboard') }}"
+            href="{{ url_for('index') }}"
             class="nav-btn">
 
             Dashboard
@@ -123,11 +123,16 @@
         </a>
 
         <a
-            href="{{ url_for('books') }}"
+            href="{{ url_for('books.view_books') }}"
             class="nav-btn">
 
             View Books
 
+        </a>
+        <a href="{{ url_for('library_rules') }}" class="nav-btn">
+        
+            Library Policy
+        
         </a>
 
     </div>
