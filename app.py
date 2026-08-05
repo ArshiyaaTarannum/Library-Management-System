@@ -21,10 +21,10 @@ app.register_blueprint(inventory_bp)
 app.register_blueprint(members_bp)
 app.register_blueprint(borrow_bp)
 
-# DASHBOARD PAGE 
+# INDEX PAGE
 
 @app.route("/")
-def dashboard():
+def index():
     return render_template("index.html")
 
 # ---------------- LIBRARY RULES ----------------
@@ -37,7 +37,7 @@ def library_rules():
 
     if policy is None:
         flash("Library policy has not been configured yet.")
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("index"))
 
     return render_template(
         "library_rules.html",
