@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Librarian Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}">
+
+</head>
+
+<body>
+
+    <h1>Librarian Dashboard</h1>
+
+    <p class="subtitle">
+        Manage books, members, inventory and circulation from one place.
+    </p>
+
+    <!-- Quick Statistics -->
+
+    <div class="dashboard-stats">
+
+        <div class="stat-card">
+            <h3>{{ total_books }}</h3>
+            <p>Books</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ total_copies }}</h3>
+            <p>Copies</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ total_members }}</h3>
+            <p>Members</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ issued_books }}</h3>
+            <p>Issued</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ overdue_books }}</h3>
+            <p>Overdue</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ total_shelves }}</h3>
+            <p>Shelves</p>
+        </div>
+
+    </div>
+
+    <!-- Management Modules -->
+
+    <div class="dashboard-grid">
+
+        <a href="{{ url_for('books.add_books') }}" class="dashboard-card">
+
+            <h2> Books</h2>
+
+            <p>
+                Add, edit, remove and manage books and their copies.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('category.category') }}" class="dashboard-card">
+
+            <h2> Categories</h2>
+
+            <p>
+                Organize books into categories.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('inventory.inventory') }}" class="dashboard-card">
+
+            <h2> Inventory</h2>
+
+            <p>
+                Track copy status, shelves and availability.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('shelf.shelf') }}" class="dashboard-card">
+
+            <h2> Shelves</h2>
+
+            <p>
+                Manage shelf locations and capacities.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('members.members') }}" class="dashboard-card">
+
+            <h2> Members</h2>
+
+            <p>
+                Register and manage library members.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('borrow.borrow_books') }}" class="dashboard-card">
+
+            <h2> Borrowing</h2>
+
+            <p>
+                Issue books, process returns and collect fines.
+            </p>
+
+        </a>
+
+        <a href="{{ url_for('policy.library_policy') }}" class="dashboard-card">
+
+            <h2> Library Policy</h2>
+
+            <p>
+                Configure borrowing rules and fine policies.
+            </p>
+
+        </a>
+
+    </div>
+
+    <!-- Navigation -->
+
+    <div class="navigation-buttons">
+
+        <a href="{{ url_for('index') }}"
+           class="nav-btn">
+
+            Home
+
+        </a>
+
+    </div>
+
+</body>
+
+</html>
